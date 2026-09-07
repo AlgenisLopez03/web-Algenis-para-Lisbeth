@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import './App.css'
 
-const START_DATE = new Date(2018, 10, 29, 0, 0, 0)
+const START_DATE = new Date(2019, 10, 29, 0, 0, 0)
 
 type ElapsedTime = {
   years: number

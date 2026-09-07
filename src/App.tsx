@@ -134,6 +134,7 @@ function App() {
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [wheelResult, setWheelResult] = useState('')
+  const [activePlace, setActivePlace] = useState<'met' | 'kiss' | null>(null)
 
   const floatingHearts = useMemo(
     () =>
@@ -310,19 +311,31 @@ function App() {
       <section className="section-shell places-section" aria-labelledby="places-title">
         <div className="glass-card map-card">
           <SectionHeading eyebrow="Dónde empezó todo" id="places-title">Nuestros lugares</SectionHeading>
-          <a
-            className="map-wrap"
-            href="https://www.openstreetmap.org/#map=15/-17.7807/-63.1840"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Abrir nuestros lugares en el mapa"
-          >
+          <div className="map-wrap">
             <img
               src="/memories/screen-07.png"
               alt="Mapa de nuestros lugares en Santa Cruz de la Sierra"
               loading="lazy"
             />
-          </a>
+            <button
+              className={`map-hotspot map-hotspot--met ${activePlace === 'met' ? 'is-active' : ''}`}
+              type="button"
+              aria-label="Donde te conocí"
+              aria-expanded={activePlace === 'met'}
+              onClick={() => setActivePlace(activePlace === 'met' ? null : 'met')}
+            >
+              <span>Donde te conocí</span>
+            </button>
+            <button
+              className={`map-hotspot map-hotspot--kiss ${activePlace === 'kiss' ? 'is-active' : ''}`}
+              type="button"
+              aria-label="Nuestro primer beso"
+              aria-expanded={activePlace === 'kiss'}
+              onClick={() => setActivePlace(activePlace === 'kiss' ? null : 'kiss')}
+            >
+              <span>Nuestro primer beso</span>
+            </button>
+          </div>
           <a
             className="map-link"
             href="https://www.openstreetmap.org/#map=15/-17.7807/-63.1840"

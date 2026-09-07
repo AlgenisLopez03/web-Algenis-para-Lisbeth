@@ -33,6 +33,16 @@ const vouchers = [
   'Vale por un viaje sorpresa',
 ]
 
+const voucherMessages = [
+  'Este vale se convierte en un beso largo, sin prisa y con todo mi amor.',
+  'Tienes reservado un abrazo de esos que calman el mundo y se sienten como hogar.',
+  'Hoy la mesa es para dos: una cena especial, conversación bonita y todas mis miradas para ti.',
+  'Tú eliges la película; yo pongo los abrazos, la compañía y algo rico para compartir.',
+  'Desayuno preparado con cariño, servido con una sonrisa y un beso de buenos días.',
+  'Un postre para cada uno… o uno doble para compartir cucharada a cucharada.',
+  'Una aventura sorpresa juntos, con destino secreto y recuerdos nuevos por crear.',
+]
+
 const plans = [
   'Viajar juntos',
   'Ver el amanecer',
@@ -42,6 +52,15 @@ const plans = [
 ]
 
 const wheelOptions = ['Sorpresa', 'Cena', 'Cine', 'Helado', 'Picnic', 'Baile']
+
+const wheelMessages: Record<string, string> = {
+  Sorpresa: 'Prepara un pequeño detalle inesperado para el otro y entrégalo con un beso.',
+  Cena: 'Elijan una cena especial: uno escoge el lugar y el otro el postre.',
+  Cine: 'Hoy toca película juntos, abrazados y sin mirar el teléfono.',
+  Helado: 'Vayan por un helado y cada uno debe elegir el sabor del otro.',
+  Picnic: 'Planeen un picnic en su lugar favorito con música y algo rico para compartir.',
+  Baile: 'Pongan su canción y bailen juntos, aunque sea en medio de la sala.',
+}
 
 function getElapsedTime(now: Date): ElapsedTime {
   let years = now.getFullYear() - START_DATE.getFullYear()
@@ -129,29 +148,59 @@ function SectionHeading({ eyebrow, children, id }: { eyebrow: string; children: 
 function App() {
   const elapsed = useAnniversaryClock()
   const [letterOpen, setLetterOpen] = useState(false)
-  const [redeemed, setRedeemed] = useState<number[]>([])
-  const [toast, setToast] = useState('')
+  const [redeemed, setRedeemed] = useState<number[]>(() => {
+    try {
+      const savedVouchers = window.localStorage.getItem('algenis-lisbeth-redeemed-vouchers')
+      if (!savedVouchers) return []
+      const parsedVouchers: unknown = JSON.parse(savedVouchers)
+      return Array.isArray(parsedVouchers)
+        ? parsedVouchers.filter((value): value is number => Number.isInteger(value) && value >= 0 && value < vouchers.length)
+        : []
+    } catch {
+      return []
+    }
+  })
+  const [activeVoucher, setActiveVoucher] = useState<number | null>(null)
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [wheelResult, setWheelResult] = useState('')
+  const [wheelRevealOpen, setWheelRevealOpen] = useState(false)
   const [activePlace, setActivePlace] = useState<'met' | 'kiss' | null>(null)
 
   const floatingHearts = useMemo(
     () =>
-      Array.from({ length: 14 }, (_, index) => ({
-        left: `${(index * 37) % 96}%`,
-        delay: `${(index % 6) * -1.7}s`,
-        duration: `${8 + (index % 5) * 1.4}s`,
-        size: `${8 + (index % 4) * 3}px`,
+      Array.from({ length: 20 }, (_, index) => ({
+        left: `${(index * 37) % 94 + 3}%`,
+        delay: `${(index % 10) * -1.35}s`,
+        duration: `${9 + (index % 6) * 1.25}s`,
+        size: `${7 + (index % 4) * 2}px`,
+        sway: `${-18 + (index % 5) * 9}px`,
       })),
     [],
   )
 
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('algenis-lisbeth-redeemed-vouchers', JSON.stringify(redeemed))
+    } catch {
+      // The voucher still works even when private browsing blocks local storage.
+    }
+  }, [redeemed])
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setActiveVoucher(null)
+      setWheelRevealOpen(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [])
+
   const redeemVoucher = (index: number) => {
     if (redeemed.includes(index)) return
     setRedeemed((current) => [...current, index])
-    setToast(`Canjeaste: ${vouchers[index]} ❤️`)
-    window.setTimeout(() => setToast(''), 3_000)
+    setActiveVoucher(index)
   }
 
   const spinWheel = () => {
@@ -163,6 +212,7 @@ function App() {
     setRotation((current) => current + extraRotation)
     window.setTimeout(() => {
       setWheelResult(wheelOptions[selected])
+      setWheelRevealOpen(true)
       setSpinning(false)
     }, 3_250)
   }
@@ -179,6 +229,7 @@ function App() {
                 '--heart-delay': heart.delay,
                 '--heart-duration': heart.duration,
                 '--heart-size': heart.size,
+                '--heart-sway': heart.sway,
               } as CSSProperties
             }
           >
@@ -439,7 +490,47 @@ function App() {
         <p className="forever">♥&nbsp;&nbsp; Para siempre &nbsp;&nbsp;♥</p>
       </section>
 
-      {toast && <div className="toast" role="status">{toast}</div>}
+      {activeVoucher !== null && (
+        <div className="modal-backdrop" onClick={() => setActiveVoucher(null)}>
+          <article
+            className="romantic-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="voucher-message-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="modal-hearts" aria-hidden="true">
+              <span>♥</span><span>♥</span><span>♥</span><span>♥</span><span>♥</span>
+            </div>
+            <p className="eyebrow">Vale romántico canjeado</p>
+            <span className="modal-heart" aria-hidden="true">♥</span>
+            <h2 id="voucher-message-title">{vouchers[activeVoucher]}</h2>
+            <p>{voucherMessages[activeVoucher]}</p>
+            <button type="button" onClick={() => setActiveVoucher(null)}>Guardar este momento</button>
+          </article>
+        </div>
+      )}
+
+      {wheelRevealOpen && wheelResult && (
+        <div className="modal-backdrop" onClick={() => setWheelRevealOpen(false)}>
+          <article
+            className="romantic-modal wheel-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="wheel-message-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="modal-hearts" aria-hidden="true">
+              <span>♥</span><span>♥</span><span>♥</span><span>♥</span><span>♥</span>
+            </div>
+            <p className="eyebrow">El corazón eligió</p>
+            <span className="modal-heart" aria-hidden="true">♥</span>
+            <h2 id="wheel-message-title">{wheelResult}</h2>
+            <p>{wheelMessages[wheelResult]}</p>
+            <button type="button" onClick={() => setWheelRevealOpen(false)}>Aceptamos el plan</button>
+          </article>
+        </div>
+      )}
     </main>
   )
 }

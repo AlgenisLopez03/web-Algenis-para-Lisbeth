@@ -238,7 +238,24 @@ function App() {
         ))}
       </div>
 
-      <section className="hero-section section-shell" aria-labelledby="main-title">
+      <section className="cover-section section-shell" aria-label="Portada de Algenis y Lisbeth">
+        <img
+          className="cover-art"
+          src="/og.png"
+          alt="Algenis y Lisbeth, nuestra historia"
+          loading="eager"
+          fetchPriority="high"
+        />
+        <button
+          className="cover-button"
+          type="button"
+          onClick={() => document.getElementById('story-start')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          Abrir nuestra historia <span aria-hidden="true">♥</span>
+        </button>
+      </section>
+
+      <section id="story-start" className="hero-section section-shell" aria-labelledby="main-title">
         <p className="hero-kicker">Nuestra historia</p>
         <h1 id="main-title">
           <span>Algenis <em>&amp;</em></span>
@@ -371,20 +388,20 @@ function App() {
             <button
               className={`map-hotspot map-hotspot--met ${activePlace === 'met' ? 'is-active' : ''}`}
               type="button"
-              aria-label="Donde te conocí"
+              aria-label="Dónde nos conocimos"
               aria-expanded={activePlace === 'met'}
               onClick={() => setActivePlace(activePlace === 'met' ? null : 'met')}
             >
-              <span>Donde te conocí</span>
+              <span>Dónde nos conocimos</span>
             </button>
             <button
               className={`map-hotspot map-hotspot--kiss ${activePlace === 'kiss' ? 'is-active' : ''}`}
               type="button"
-              aria-label="Nuestro primer beso"
+              aria-label="El primer beso"
               aria-expanded={activePlace === 'kiss'}
               onClick={() => setActivePlace(activePlace === 'kiss' ? null : 'kiss')}
             >
-              <span>Nuestro primer beso</span>
+              <span>El primer beso</span>
             </button>
           </div>
           <a

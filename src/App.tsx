@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import './App.css'
 
 const START_DATE = new Date(2019, 10, 29, 0, 0, 0)
+const CAPSULE_UNLOCK_DATE = new Date(2026, 10, 29, 0, 0, 0)
 
 type ElapsedTime = {
   years: number
@@ -21,6 +22,20 @@ type CropPhotoProps = {
   alt: string
   rotation?: number
   className?: string
+}
+
+type SkyMemory = {
+  title: string
+  text: string
+  photo?: CropPhotoProps
+}
+
+type CapsuleCountdown = {
+  days: number
+  hours: number
+  minutes: number
+  seconds: number
+  unlocked: boolean
 }
 
 const vouchers = [
@@ -62,6 +77,69 @@ const wheelMessages: Record<string, string> = {
   Baile: 'Pongan su canción y bailen juntos, aunque sea en medio de la sala.',
 }
 
+const skyMemories: SkyMemory[] = [
+  {
+    title: 'Nuestro comienzo',
+    text: 'Desde aquel primer momento, algo en mí supo que nuestra historia sería diferente.',
+    photo: {
+      file: 'screen-01.png',
+      x: 54,
+      y: 257,
+      width: 274,
+      height: 338,
+      alt: 'Algenis y Lisbeth abrazados',
+      rotation: -1.5,
+    },
+  },
+  {
+    title: 'Tu abrazo',
+    text: 'En tus brazos encontré mi lugar favorito: ese donde todo se calma y siempre quiero volver.',
+  },
+  {
+    title: 'Los dos contra el mundo',
+    text: 'Cada aventura contigo se convierte en una historia que quiero recordar para siempre.',
+    photo: {
+      file: 'screen-02.png',
+      x: 54,
+      y: 346,
+      width: 269,
+      height: 337,
+      alt: 'Algenis y Lisbeth frente al espejo',
+      rotation: 1.2,
+    },
+  },
+  {
+    title: 'Nuestro primer beso',
+    text: 'El instante en que el tiempo se detuvo y comenzó una parte inolvidable de nosotros.',
+  },
+  {
+    title: 'Lo que nadie ve',
+    text: 'Las miradas cómplices, las risas sin explicación y esos pequeños momentos que solo entendemos tú y yo.',
+    photo: {
+      file: 'screen-08.png',
+      x: 52,
+      y: 27,
+      width: 271,
+      height: 330,
+      alt: 'Un recuerdo de juventud de Algenis y Lisbeth',
+      rotation: -1.3,
+    },
+  },
+  {
+    title: 'Siempre tú',
+    text: 'Entre todos los caminos posibles, volvería a elegir el que me lleva hasta ti.',
+  },
+]
+
+const starPositions = [
+  { left: '15%', top: '24%', delay: '-0.4s' },
+  { left: '48%', top: '12%', delay: '-1.7s' },
+  { left: '77%', top: '28%', delay: '-0.9s' },
+  { left: '27%', top: '58%', delay: '-2.2s' },
+  { left: '63%', top: '63%', delay: '-1.2s' },
+  { left: '84%', top: '76%', delay: '-2.8s' },
+]
+
 function getElapsedTime(now: Date): ElapsedTime {
   let years = now.getFullYear() - START_DATE.getFullYear()
   let cursor = new Date(START_DATE)
@@ -100,6 +178,29 @@ function useAnniversaryClock() {
   }, [])
 
   return time
+}
+
+function getCapsuleCountdown(now: Date): CapsuleCountdown {
+  const remaining = Math.max(0, CAPSULE_UNLOCK_DATE.getTime() - now.getTime())
+
+  return {
+    days: Math.floor(remaining / 86_400_000),
+    hours: Math.floor((remaining % 86_400_000) / 3_600_000),
+    minutes: Math.floor((remaining % 3_600_000) / 60_000),
+    seconds: Math.floor((remaining % 60_000) / 1_000),
+    unlocked: remaining === 0,
+  }
+}
+
+function useCapsuleCountdown() {
+  const [countdown, setCountdown] = useState(() => getCapsuleCountdown(new Date()))
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCountdown(getCapsuleCountdown(new Date())), 1_000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  return countdown
 }
 
 function CropPhoto({
@@ -147,6 +248,7 @@ function SectionHeading({ eyebrow, children, id }: { eyebrow: string; children: 
 
 function App() {
   const elapsed = useAnniversaryClock()
+  const capsuleCountdown = useCapsuleCountdown()
   const [storyOpened, setStoryOpened] = useState(false)
   const [letterOpen, setLetterOpen] = useState(false)
   const [redeemed, setRedeemed] = useState<number[]>(() => {
@@ -168,6 +270,8 @@ function App() {
   const [wheelResult, setWheelResult] = useState('')
   const [wheelRevealOpen, setWheelRevealOpen] = useState(false)
   const [activePlace, setActivePlace] = useState<'met' | 'kiss' | null>(null)
+  const [activeMemory, setActiveMemory] = useState<number | null>(null)
+  const [capsuleOpen, setCapsuleOpen] = useState(false)
 
   const floatingHearts = useMemo(
     () =>
@@ -194,6 +298,7 @@ function App() {
       if (event.key !== 'Escape') return
       setActiveVoucher(null)
       setWheelRevealOpen(false)
+      setActiveMemory(null)
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
@@ -441,6 +546,55 @@ function App() {
         </div>
       </section>
 
+      <section className="section-shell sky-section" aria-labelledby="sky-title">
+        <SectionHeading eyebrow="Secretos entre estrellas" id="sky-title">Cielo de recuerdos</SectionHeading>
+        <p className="section-description">Toca las seis estrellas doradas y descubre los momentos que guardé para ti.</p>
+        <div className="memory-sky" aria-label="Seis recuerdos escondidos en las estrellas">
+          <span className="shooting-star" aria-hidden="true" />
+          {skyMemories.map((memory, index) => {
+            const position = starPositions[index]
+            const isActive = activeMemory === index
+            return (
+              <button
+                className={`memory-star ${isActive ? 'is-active' : ''}`}
+                style={
+                  {
+                    '--star-left': position.left,
+                    '--star-top': position.top,
+                    '--star-delay': position.delay,
+                  } as CSSProperties
+                }
+                type="button"
+                key={memory.title}
+                aria-label={`Descubrir: ${memory.title}`}
+                aria-pressed={isActive}
+                onClick={() => setActiveMemory(isActive ? null : index)}
+              >
+                <span aria-hidden="true">✦</span>
+              </button>
+            )
+          })}
+          <p className="sky-hint" aria-hidden="true">Cada estrella guarda un pedacito de nosotros</p>
+        </div>
+        <div className={`memory-reveal ${activeMemory !== null ? 'has-memory' : ''}`} aria-live="polite">
+          {activeMemory === null ? (
+            <p className="memory-placeholder"><span aria-hidden="true">✦</span> Elige una estrella para revelar su secreto</p>
+          ) : (
+            <article key={skyMemories[activeMemory].title}>
+              <div className="memory-copy">
+                <p className="eyebrow">Recuerdo secreto {activeMemory + 1} de {skyMemories.length}</p>
+                <h3>{skyMemories[activeMemory].title}</h3>
+                <p>{skyMemories[activeMemory].text}</p>
+                <button type="button" onClick={() => setActiveMemory(null)}>Guardar recuerdo</button>
+              </div>
+              {skyMemories[activeMemory].photo && (
+                <CropPhoto {...skyMemories[activeMemory].photo} className="sky-memory-photo" />
+              )}
+            </article>
+          )}
+        </div>
+      </section>
+
       <section className="section-shell voucher-section" aria-labelledby="voucher-title">
         <SectionHeading eyebrow="Solo para ti" id="voucher-title">Nuestros vales de amor</SectionHeading>
         <p className="section-description">Canjéalos cuando quieras. Pero cada vale solo se puede usar una vez.</p>
@@ -493,6 +647,43 @@ function App() {
         <p className={`wheel-result ${wheelResult ? 'is-visible' : ''}`} aria-live="polite">
           {wheelResult ? `Hoy el corazón eligió: ${wheelResult} ♥` : 'Puedes girar las veces que quieras 🤍'}
         </p>
+      </section>
+
+      <section className="section-shell capsule-section" aria-labelledby="capsule-title">
+        <div className={`glass-card time-capsule ${capsuleCountdown.unlocked ? 'is-unlocked' : ''}`}>
+          <SectionHeading eyebrow="Para nuestro futuro" id="capsule-title">Cápsula del tiempo</SectionHeading>
+          <div className="capsule-lock" aria-hidden="true"><span>♥</span></div>
+
+          {!capsuleCountdown.unlocked ? (
+            <>
+              <p className="capsule-intro">Hay palabras que merecen esperar el momento perfecto.</p>
+              <time dateTime="2026-11-29T00:00:00-04:00">Se abrirá el 29 de noviembre de 2026</time>
+              <div className="capsule-countdown" aria-label="Tiempo restante para abrir la cápsula" aria-live="polite">
+                <div><strong>{capsuleCountdown.days}</strong><span>Días</span></div>
+                <div><strong>{String(capsuleCountdown.hours).padStart(2, '0')}</strong><span>Horas</span></div>
+                <div><strong>{String(capsuleCountdown.minutes).padStart(2, '0')}</strong><span>Min</span></div>
+                <div><strong>{String(capsuleCountdown.seconds).padStart(2, '0')}</strong><span>Seg</span></div>
+              </div>
+              <p className="capsule-status"><span aria-hidden="true">✦</span> El tiempo está guardando este mensaje para nosotros</p>
+            </>
+          ) : !capsuleOpen ? (
+            <div className="capsule-ready">
+              <p className="script">La espera terminó. Este mensaje ya es nuestro.</p>
+              <button type="button" onClick={() => setCapsuleOpen(true)}>Abrir cápsula</button>
+            </div>
+          ) : (
+            <article className="capsule-message">
+              <p className="eyebrow">Un mensaje desde nuestro pasado</p>
+              <p className="script">
+                Si estás leyendo esto, llegamos juntos a otro aniversario. Gracias por seguir siendo
+                mi lugar favorito, mi calma y mi aventura. Quiero seguir eligiéndote en cada versión
+                de nosotros. Te amo, Lisbeth.
+              </p>
+              <p className="script capsule-signature">Algenis</p>
+              <button type="button" onClick={() => setCapsuleOpen(false)}>Cerrar con amor</button>
+            </article>
+          )}
+        </div>
       </section>
 
       <section className="section-shell final-section" aria-labelledby="final-title">

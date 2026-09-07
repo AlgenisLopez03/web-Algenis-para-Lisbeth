@@ -147,6 +147,7 @@ function SectionHeading({ eyebrow, children, id }: { eyebrow: string; children: 
 
 function App() {
   const elapsed = useAnniversaryClock()
+  const [storyOpened, setStoryOpened] = useState(false)
   const [letterOpen, setLetterOpen] = useState(false)
   const [redeemed, setRedeemed] = useState<number[]>(() => {
     try {
@@ -161,6 +162,7 @@ function App() {
     }
   })
   const [activeVoucher, setActiveVoucher] = useState<number | null>(null)
+  const [voucherResetNotice, setVoucherResetNotice] = useState(false)
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [wheelResult, setWheelResult] = useState('')
@@ -203,6 +205,13 @@ function App() {
     setActiveVoucher(index)
   }
 
+  const resetVouchers = () => {
+    setRedeemed([])
+    setActiveVoucher(null)
+    setVoucherResetNotice(true)
+    window.setTimeout(() => setVoucherResetNotice(false), 3_000)
+  }
+
   const spinWheel = () => {
     if (spinning) return
     const selected = Math.floor(Math.random() * wheelOptions.length)
@@ -238,23 +247,21 @@ function App() {
         ))}
       </div>
 
-      <section className="cover-section section-shell" aria-label="Portada de Algenis y Lisbeth">
-        <img
-          className="cover-art"
-          src="/og.png"
-          alt="Algenis y Lisbeth, nuestra historia"
-          loading="eager"
-          fetchPriority="high"
-        />
-        <button
-          className="cover-button"
-          type="button"
-          onClick={() => document.getElementById('story-start')?.scrollIntoView({ behavior: 'smooth' })}
-        >
-          Abrir nuestra historia <span aria-hidden="true">♥</span>
-        </button>
-      </section>
-
+      {!storyOpened ? (
+        <section className="cover-section section-shell" aria-label="Portada de Algenis y Lisbeth">
+          <img
+            className="cover-art"
+            src="/og.png"
+            alt="Algenis y Lisbeth, nuestra historia"
+            loading="eager"
+            fetchPriority="high"
+          />
+          <button className="cover-button" type="button" onClick={() => setStoryOpened(true)}>
+            Abrir nuestra historia <span aria-hidden="true">♥</span>
+          </button>
+        </section>
+      ) : (
+        <div className="story-content">
       <section id="story-start" className="hero-section section-shell" aria-labelledby="main-title">
         <p className="hero-kicker">Nuestra historia</p>
         <h1 id="main-title">
@@ -437,6 +444,12 @@ function App() {
       <section className="section-shell voucher-section" aria-labelledby="voucher-title">
         <SectionHeading eyebrow="Solo para ti" id="voucher-title">Nuestros vales de amor</SectionHeading>
         <p className="section-description">Canjéalos cuando quieras. Pero cada vale solo se puede usar una vez.</p>
+        <button className="voucher-reset" type="button" onClick={resetVouchers} disabled={redeemed.length === 0}>
+          <span aria-hidden="true">↻</span> Reiniciar vales
+        </button>
+        <p className={`voucher-reset-notice ${voucherResetNotice ? 'is-visible' : ''}`} aria-live="polite">
+          {voucherResetNotice ? 'Todos los vales vuelven a estar disponibles ♥' : ''}
+        </p>
         <div className="voucher-list">
           {vouchers.map((voucher, index) => {
             const isRedeemed = redeemed.includes(index)
@@ -483,16 +496,14 @@ function App() {
       </section>
 
       <section className="section-shell final-section" aria-labelledby="final-title">
-        <CropPhoto
-          file="screen-11.png"
-          x={52}
-          y={0}
-          width={265}
-          height={317}
-          alt="Retrato de Lisbeth"
-          rotation={1.5}
-          className="final-photo"
-        />
+        <figure
+          className="crop-photo final-photo final-photo--uploaded"
+          style={{ aspectRatio: '3 / 4', '--photo-rotation': '1.5deg' } as CSSProperties}
+        >
+          <div className="crop-photo__viewport">
+            <img src="/memories/final-kiss.png" alt="Algenis y Lisbeth besándose bajo las luces" loading="lazy" />
+          </div>
+        </figure>
         <div className="final-copy" id="final-title">
           <p className="script">Lisbeth,</p>
           <p className="script">por todo lo que somos.</p>
@@ -546,6 +557,8 @@ function App() {
             <p>{wheelMessages[wheelResult]}</p>
             <button type="button" onClick={() => setWheelRevealOpen(false)}>Aceptamos el plan</button>
           </article>
+        </div>
+      )}
         </div>
       )}
     </main>

@@ -611,7 +611,7 @@ function App() {
         <div className="video-frame">
           <iframe
             ref={videoRef}
-            src="https://www.youtube-nocookie.com/embed/C3NxyNFT62w?autoplay=1&mute=0&playsinline=1&rel=0&enablejsapi=1"
+            src={`https://www.youtube-nocookie.com/embed/C3NxyNFT62w?autoplay=1&mute=0&playsinline=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
             title="Nuestro video especial"
             loading="eager"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

@@ -1450,6 +1450,7 @@ function App() {
           rotation={-1.9}
           motion="postcard-toss"
           touchEffect="stardust"
+          priority
         />
 
         <div className="glass-card bucket-card" data-reveal="list-rise">
@@ -1510,7 +1511,7 @@ function App() {
                 <button type="button" onClick={() => setActiveMemory(null)}>Guardar recuerdo</button>
               </div>
               {skyMemories[activeMemory].photo && (
-                <CropPhoto {...skyMemories[activeMemory].photo} className="sky-memory-photo" />
+                <CropPhoto {...skyMemories[activeMemory].photo} className="sky-memory-photo" priority />
               )}
             </article>
           )}

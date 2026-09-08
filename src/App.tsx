@@ -175,10 +175,12 @@ const galleryPhotos: GalleryPhoto[] = [
   { file: 'gallery-12.webp', title: 'Mi lugar seguro', alt: 'Lisbeth descansando abrazada a Algenis' },
 ]
 
-const DOMINICAN_REPUBLIC_CENTER: [number, number] = [18.7357, -70.1627]
+const SAN_JUAN_CENTER: [number, number] = [18.8064, -71.22626]
+const MAP_HEARTS_STORAGE_KEY = 'algenis-lisbeth-map-hearts-san-juan'
+const LEGACY_MAP_HEARTS_STORAGE_KEY = 'algenis-lisbeth-map-hearts'
 const DEFAULT_MAP_HEARTS: MapHeart[] = [
-  { id: 'met', label: 'Dónde nos conocimos', position: [18.4861, -69.9312], isOriginal: true },
-  { id: 'first-kiss', label: 'Nuestro primer beso', position: [18.508, -69.958], isOriginal: true },
+  { id: 'met', label: 'Dónde nos conocimos', position: [18.8092, -71.2315], isOriginal: true },
+  { id: 'first-kiss', label: 'Nuestro primer beso', position: [18.8026, -71.2214], isOriginal: true },
 ]
 
 const redHeartIcon = divIcon({
@@ -333,9 +335,12 @@ function App() {
   const [galleryPage, setGalleryPage] = useState(0)
   const [pendingMapHeart, setPendingMapHeart] = useState<[number, number] | null>(null)
   const [mapHeartName, setMapHeartName] = useState('')
+  const [editingMapHeartId, setEditingMapHeartId] = useState<string | null>(null)
+  const [editingMapHeartName, setEditingMapHeartName] = useState('')
   const [mapHearts, setMapHearts] = useState<MapHeart[]>(() => {
     try {
-      const savedHearts = window.localStorage.getItem('algenis-lisbeth-map-hearts')
+      const currentSavedHearts = window.localStorage.getItem(MAP_HEARTS_STORAGE_KEY)
+      const savedHearts = currentSavedHearts ?? window.localStorage.getItem(LEGACY_MAP_HEARTS_STORAGE_KEY)
       if (!savedHearts) return DEFAULT_MAP_HEARTS
       const parsedHearts: unknown = JSON.parse(savedHearts)
       if (!Array.isArray(parsedHearts)) return DEFAULT_MAP_HEARTS
@@ -350,7 +355,13 @@ function App() {
           candidate.position.every((coordinate) => typeof coordinate === 'number' && Number.isFinite(coordinate))
         )
       })
-      return validHearts.length >= 2 ? validHearts : DEFAULT_MAP_HEARTS
+      if (validHearts.length < 2) return DEFAULT_MAP_HEARTS
+      if (currentSavedHearts) return validHearts
+
+      return validHearts.map((heart) => {
+        const sanJuanHeart = DEFAULT_MAP_HEARTS.find((defaultHeart) => defaultHeart.id === heart.id)
+        return sanJuanHeart ? { ...heart, position: sanJuanHeart.position } : heart
+      })
     } catch {
       return DEFAULT_MAP_HEARTS
     }
@@ -378,7 +389,7 @@ function App() {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem('algenis-lisbeth-map-hearts', JSON.stringify(mapHearts))
+      window.localStorage.setItem(MAP_HEARTS_STORAGE_KEY, JSON.stringify(mapHearts))
     } catch {
       // The interactive map still works when private browsing blocks local storage.
     }
@@ -400,6 +411,7 @@ function App() {
       setWheelRevealOpen(false)
       setActiveMemory(null)
       setPendingMapHeart(null)
+      setEditingMapHeartId(null)
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
@@ -450,6 +462,20 @@ function App() {
 
   const removeMapHeart = (id: string) => {
     setMapHearts((current) => current.filter((heart) => heart.id !== id || heart.isOriginal))
+  }
+
+  const startRenamingMapHeart = (heart: MapHeart) => {
+    setEditingMapHeartId(heart.id)
+    setEditingMapHeartName(heart.label)
+  }
+
+  const renameMapHeart = (event: React.FormEvent<HTMLFormElement>, id: string) => {
+    event.preventDefault()
+    const label = editingMapHeartName.trim()
+    if (!label) return
+    setMapHearts((current) => current.map((heart) => (heart.id === id ? { ...heart, label } : heart)))
+    setEditingMapHeartId(null)
+    setEditingMapHeartName('')
   }
 
   const galleryPageCount = Math.ceil(galleryPhotos.length / 3)
@@ -654,21 +680,21 @@ function App() {
 
       <section className="section-shell places-section" aria-labelledby="places-title">
         <div className="glass-card map-card">
-          <SectionHeading eyebrow="República Dominicana" id="places-title">El mapa de nuestro amor</SectionHeading>
+          <SectionHeading eyebrow="San Juan · República Dominicana" id="places-title">El mapa de nuestro amor</SectionHeading>
           <p className="map-description">
-            Arrastra, amplía o pellizca el mapa para recorrerlo. Toca cualquier lugar vacío para agregar un corazón rojo.
+            Recorre la provincia de San Juan, amplía o pellizca el mapa. Toca cualquier lugar vacío para agregar un corazón rojo y ponerle un nombre.
           </p>
           <div className="map-wrap interactive-map-wrap">
             <MapContainer
               className="memory-map"
-              center={DOMINICAN_REPUBLIC_CENTER}
-              zoom={8}
-              minZoom={7}
+              center={SAN_JUAN_CENTER}
+              zoom={13}
+              minZoom={9}
               maxZoom={18}
-              maxBounds={[[17.3, -72.2], [20.2, -67.9]]}
+              maxBounds={[[18.42, -71.9], [19.2, -70.78]]}
               maxBoundsViscosity={0.35}
               scrollWheelZoom={false}
-              aria-label="Mapa interactivo de República Dominicana con nuestros lugares especiales"
+              aria-label="Mapa interactivo de la provincia San Juan en República Dominicana con nuestros lugares especiales"
             >
               <TileLayer
                 attribution="&copy; OpenStreetMap contributors"
@@ -690,10 +716,32 @@ function App() {
                 >
                   <Popup>
                     <div className="heart-popup-copy">
-                      <strong><span aria-hidden="true">♥</span>{heart.label}</strong>
-                      <small>Puedes arrastrar este corazón hasta el lugar exacto.</small>
-                      {!heart.isOriginal && (
-                        <button type="button" onClick={() => removeMapHeart(heart.id)}>Quitar corazón</button>
+                      {editingMapHeartId === heart.id ? (
+                        <form className="heart-popup-form" onSubmit={(event) => renameMapHeart(event, heart.id)}>
+                          <label htmlFor={`heart-name-${heart.id}`}>Nombre del lugar</label>
+                          <input
+                            id={`heart-name-${heart.id}`}
+                            value={editingMapHeartName}
+                            onChange={(event) => setEditingMapHeartName(event.target.value)}
+                            maxLength={52}
+                            autoFocus
+                          />
+                          <div>
+                            <button type="submit">Guardar nombre</button>
+                            <button type="button" onClick={() => setEditingMapHeartId(null)}>Cancelar</button>
+                          </div>
+                        </form>
+                      ) : (
+                        <>
+                          <strong><span aria-hidden="true">♥</span>{heart.label}</strong>
+                          <small>Puedes arrastrar este corazón hasta el lugar exacto.</small>
+                          <div className="heart-popup-actions">
+                            <button type="button" onClick={() => startRenamingMapHeart(heart)}>Cambiar nombre</button>
+                            {!heart.isOriginal && (
+                              <button type="button" onClick={() => removeMapHeart(heart.id)}>Quitar corazón</button>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
                   </Popup>

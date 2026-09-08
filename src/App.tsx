@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { divIcon } from 'leaflet'
+import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
 import './App.css'
 
 const START_DATE = new Date(2019, 10, 29, 0, 0, 0)
@@ -36,6 +39,19 @@ type CapsuleCountdown = {
   minutes: number
   seconds: number
   unlocked: boolean
+}
+
+type MapHeart = {
+  id: string
+  label: string
+  position: [number, number]
+  isOriginal?: boolean
+}
+
+type GalleryPhoto = {
+  file: string
+  title: string
+  alt: string
 }
 
 const vouchers = [
@@ -139,6 +155,39 @@ const starPositions = [
   { left: '63%', top: '63%', delay: '-1.2s' },
   { left: '84%', top: '76%', delay: '-2.8s' },
 ]
+
+const galleryPhotos: GalleryPhoto[] = [
+  { file: 'gallery-01.webp', title: 'Un día para recordar', alt: 'Algenis y Lisbeth juntos en la playa' },
+  {
+    file: 'gallery-02.webp',
+    title: 'Nuestra primera Navidad viviendo juntos como pareja',
+    alt: 'Algenis y Lisbeth en su primera Navidad viviendo juntos',
+  },
+  { file: 'gallery-03.webp', title: 'Un beso entre burbujas', alt: 'Algenis y Lisbeth besándose entre burbujas' },
+  { file: 'gallery-04.webp', title: 'Navidad y amor', alt: 'Algenis y Lisbeth besándose frente a un árbol de Navidad' },
+  { file: 'gallery-05.webp', title: 'Aventuras contigo', alt: 'Algenis y Lisbeth compartiendo una aventura en four wheel' },
+  { file: 'gallery-06.webp', title: 'Celebrando tus logros', alt: 'Algenis acompañando a Lisbeth en su graduación' },
+  { file: 'gallery-07.webp', title: 'Celebrando mis logros contigo', alt: 'Lisbeth acompañando a Algenis en su graduación' },
+  { file: 'gallery-08.webp', title: 'Una noche solo nuestra', alt: 'Algenis y Lisbeth juntos frente al espejo' },
+  { file: 'gallery-09.webp', title: 'Días de sol contigo', alt: 'Algenis y Lisbeth disfrutando juntos de la piscina' },
+  { file: 'gallery-10.webp', title: 'Mi lugar favorito', alt: 'Algenis y Lisbeth compartiendo un momento romántico' },
+  { file: 'gallery-11.webp', title: 'Besos robados', alt: 'Algenis y Lisbeth a punto de besarse en el automóvil' },
+  { file: 'gallery-12.webp', title: 'Mi lugar seguro', alt: 'Lisbeth descansando abrazada a Algenis' },
+]
+
+const DOMINICAN_REPUBLIC_CENTER: [number, number] = [18.7357, -70.1627]
+const DEFAULT_MAP_HEARTS: MapHeart[] = [
+  { id: 'met', label: 'Dónde nos conocimos', position: [18.4861, -69.9312], isOriginal: true },
+  { id: 'first-kiss', label: 'Nuestro primer beso', position: [18.508, -69.958], isOriginal: true },
+]
+
+const redHeartIcon = divIcon({
+  className: 'red-heart-marker',
+  html: '<span aria-hidden="true">♥</span>',
+  iconSize: [46, 46],
+  iconAnchor: [23, 39],
+  popupAnchor: [0, -35],
+})
 
 function getElapsedTime(now: Date): ElapsedTime {
   let years = now.getFullYear() - START_DATE.getFullYear()
@@ -246,6 +295,16 @@ function SectionHeading({ eyebrow, children, id }: { eyebrow: string; children: 
   )
 }
 
+function MapHeartAdder({ onPlace }: { onPlace: (position: [number, number]) => void }) {
+  useMapEvents({
+    click(event) {
+      onPlace([event.latlng.lat, event.latlng.lng])
+    },
+  })
+
+  return null
+}
+
 function App() {
   const elapsed = useAnniversaryClock()
   const capsuleCountdown = useCapsuleCountdown()
@@ -269,9 +328,33 @@ function App() {
   const [spinning, setSpinning] = useState(false)
   const [wheelResult, setWheelResult] = useState('')
   const [wheelRevealOpen, setWheelRevealOpen] = useState(false)
-  const [activePlace, setActivePlace] = useState<'met' | 'kiss' | null>(null)
   const [activeMemory, setActiveMemory] = useState<number | null>(null)
   const [capsuleOpen, setCapsuleOpen] = useState(false)
+  const [galleryPage, setGalleryPage] = useState(0)
+  const [pendingMapHeart, setPendingMapHeart] = useState<[number, number] | null>(null)
+  const [mapHeartName, setMapHeartName] = useState('')
+  const [mapHearts, setMapHearts] = useState<MapHeart[]>(() => {
+    try {
+      const savedHearts = window.localStorage.getItem('algenis-lisbeth-map-hearts')
+      if (!savedHearts) return DEFAULT_MAP_HEARTS
+      const parsedHearts: unknown = JSON.parse(savedHearts)
+      if (!Array.isArray(parsedHearts)) return DEFAULT_MAP_HEARTS
+      const validHearts = parsedHearts.filter((heart): heart is MapHeart => {
+        if (!heart || typeof heart !== 'object') return false
+        const candidate = heart as Partial<MapHeart>
+        return (
+          typeof candidate.id === 'string' &&
+          typeof candidate.label === 'string' &&
+          Array.isArray(candidate.position) &&
+          candidate.position.length === 2 &&
+          candidate.position.every((coordinate) => typeof coordinate === 'number' && Number.isFinite(coordinate))
+        )
+      })
+      return validHearts.length >= 2 ? validHearts : DEFAULT_MAP_HEARTS
+    } catch {
+      return DEFAULT_MAP_HEARTS
+    }
+  })
 
   const floatingHearts = useMemo(
     () =>
@@ -294,11 +377,29 @@ function App() {
   }, [redeemed])
 
   useEffect(() => {
+    try {
+      window.localStorage.setItem('algenis-lisbeth-map-hearts', JSON.stringify(mapHearts))
+    } catch {
+      // The interactive map still works when private browsing blocks local storage.
+    }
+  }, [mapHearts])
+
+  useEffect(() => {
+    if (!storyOpened) return
+    const timer = window.setInterval(
+      () => setGalleryPage((current) => (current + 1) % Math.ceil(galleryPhotos.length / 3)),
+      7_000,
+    )
+    return () => window.clearInterval(timer)
+  }, [storyOpened])
+
+  useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       setActiveVoucher(null)
       setWheelRevealOpen(false)
       setActiveMemory(null)
+      setPendingMapHeart(null)
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
@@ -329,6 +430,32 @@ function App() {
       setWheelRevealOpen(true)
       setSpinning(false)
     }, 3_250)
+  }
+
+  const moveMapHeart = (id: string, position: [number, number]) => {
+    setMapHearts((current) => current.map((heart) => (heart.id === id ? { ...heart, position } : heart)))
+  }
+
+  const saveMapHeart = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!pendingMapHeart) return
+    const label = mapHeartName.trim() || `Nuestro lugar especial ${mapHearts.length - 1}`
+    setMapHearts((current) => [
+      ...current,
+      { id: `special-${Date.now()}`, label, position: pendingMapHeart },
+    ])
+    setPendingMapHeart(null)
+    setMapHeartName('')
+  }
+
+  const removeMapHeart = (id: string) => {
+    setMapHearts((current) => current.filter((heart) => heart.id !== id || heart.isOriginal))
+  }
+
+  const galleryPageCount = Math.ceil(galleryPhotos.length / 3)
+  const visibleGalleryPhotos = galleryPhotos.slice(galleryPage * 3, galleryPage * 3 + 3)
+  const changeGalleryPage = (direction: number) => {
+    setGalleryPage((current) => (current + direction + galleryPageCount) % galleryPageCount)
   }
 
   return (
@@ -488,42 +615,111 @@ function App() {
         />
       </section>
 
+      <section className="section-shell gallery-section" aria-labelledby="gallery-title">
+        <SectionHeading eyebrow="Doce pedacitos de nosotros" id="gallery-title">Nuestra historia en fotos</SectionHeading>
+        <p className="section-description">Tres recuerdos en cada tarjeta. La galería cambia sola, pero también puedes recorrerla.</p>
+        <div className="glass-card gallery-card">
+          <div className="gallery-grid" key={galleryPage} aria-live="polite">
+            {visibleGalleryPhotos.map((photo, index) => (
+              <figure className={`gallery-memory gallery-memory--${index + 1}`} key={photo.file}>
+                <img src={`/memories/${photo.file}`} alt={photo.alt} loading="lazy" />
+                <figcaption>
+                  <span>{String(galleryPage * 3 + index + 1).padStart(2, '0')}</span>
+                  {photo.title}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          <div className="gallery-controls">
+            <button type="button" aria-label="Ver los tres recuerdos anteriores" onClick={() => changeGalleryPage(-1)}>←</button>
+            <div className="gallery-dots" aria-label="Elegir grupo de recuerdos">
+              {Array.from({ length: galleryPageCount }, (_, index) => (
+                <button
+                  type="button"
+                  className={galleryPage === index ? 'is-active' : ''}
+                  aria-label={`Ver recuerdos ${index * 3 + 1} al ${index * 3 + 3}`}
+                  aria-current={galleryPage === index ? 'true' : undefined}
+                  onClick={() => setGalleryPage(index)}
+                  key={index}
+                />
+              ))}
+            </div>
+            <button type="button" aria-label="Ver los próximos tres recuerdos" onClick={() => changeGalleryPage(1)}>→</button>
+          </div>
+          <p className="gallery-count">
+            Recuerdos {galleryPage * 3 + 1}–{galleryPage * 3 + visibleGalleryPhotos.length} de {galleryPhotos.length}
+          </p>
+        </div>
+      </section>
+
       <section className="section-shell places-section" aria-labelledby="places-title">
         <div className="glass-card map-card">
-          <SectionHeading eyebrow="Dónde empezó todo" id="places-title">Nuestros lugares</SectionHeading>
-          <div className="map-wrap">
-            <img
-              src="/memories/screen-07.png"
-              alt="Mapa de nuestros lugares en Santa Cruz de la Sierra"
-              loading="lazy"
-            />
-            <button
-              className={`map-hotspot map-hotspot--met ${activePlace === 'met' ? 'is-active' : ''}`}
-              type="button"
-              aria-label="Dónde nos conocimos"
-              aria-expanded={activePlace === 'met'}
-              onClick={() => setActivePlace(activePlace === 'met' ? null : 'met')}
+          <SectionHeading eyebrow="República Dominicana" id="places-title">El mapa de nuestro amor</SectionHeading>
+          <p className="map-description">
+            Arrastra, amplía o pellizca el mapa para recorrerlo. Toca cualquier lugar vacío para agregar un corazón rojo.
+          </p>
+          <div className="map-wrap interactive-map-wrap">
+            <MapContainer
+              className="memory-map"
+              center={DOMINICAN_REPUBLIC_CENTER}
+              zoom={8}
+              minZoom={7}
+              maxZoom={18}
+              maxBounds={[[17.3, -72.2], [20.2, -67.9]]}
+              maxBoundsViscosity={0.35}
+              scrollWheelZoom={false}
+              aria-label="Mapa interactivo de República Dominicana con nuestros lugares especiales"
             >
-              <span>Dónde nos conocimos</span>
-            </button>
-            <button
-              className={`map-hotspot map-hotspot--kiss ${activePlace === 'kiss' ? 'is-active' : ''}`}
-              type="button"
-              aria-label="El primer beso"
-              aria-expanded={activePlace === 'kiss'}
-              onClick={() => setActivePlace(activePlace === 'kiss' ? null : 'kiss')}
-            >
-              <span>El primer beso</span>
-            </button>
+              <TileLayer
+                attribution="&copy; OpenStreetMap contributors"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <MapHeartAdder onPlace={(position) => setPendingMapHeart(position)} />
+              {mapHearts.map((heart) => (
+                <Marker
+                  key={heart.id}
+                  position={heart.position}
+                  icon={redHeartIcon}
+                  draggable
+                  eventHandlers={{
+                    dragend(event) {
+                      const position = event.target.getLatLng()
+                      moveMapHeart(heart.id, [position.lat, position.lng])
+                    },
+                  }}
+                >
+                  <Popup>
+                    <div className="heart-popup-copy">
+                      <strong><span aria-hidden="true">♥</span>{heart.label}</strong>
+                      <small>Puedes arrastrar este corazón hasta el lugar exacto.</small>
+                      {!heart.isOriginal && (
+                        <button type="button" onClick={() => removeMapHeart(heart.id)}>Quitar corazón</button>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+              {pendingMapHeart && <Marker position={pendingMapHeart} icon={redHeartIcon} opacity={0.7} />}
+            </MapContainer>
           </div>
-          <a
-            className="map-link"
-            href="https://www.openstreetmap.org/#map=15/-17.7807/-63.1840"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Abrir el mapa completo
-          </a>
+          {pendingMapHeart && (
+            <form className="map-heart-form" onSubmit={saveMapHeart}>
+              <label htmlFor="map-heart-name">¿Cómo se llama este recuerdo?</label>
+              <input
+                id="map-heart-name"
+                value={mapHeartName}
+                onChange={(event) => setMapHeartName(event.target.value)}
+                placeholder="Ej.: Nuestra primera cita"
+                maxLength={52}
+                autoFocus
+              />
+              <div>
+                <button type="submit">Guardar corazón</button>
+                <button type="button" onClick={() => { setPendingMapHeart(null); setMapHeartName('') }}>Cancelar</button>
+              </div>
+            </form>
+          )}
+          <p className="map-note"><span aria-hidden="true">♥</span> Los corazones nuevos y sus posiciones se guardan en este dispositivo.</p>
         </div>
 
         <CropPhoto

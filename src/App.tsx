@@ -20,8 +20,8 @@ type ElapsedTime = {
 
 type CropPhotoProps = {
   file: string
-  x: number
-  y: number
+  x?: number
+  y?: number
   width: number
   height: number
   alt: string
@@ -30,6 +30,7 @@ type CropPhotoProps = {
   motion?: PhotoMotion
   touchEffect?: TouchEffect
   priority?: boolean
+  fit?: 'crop' | 'contain'
 }
 
 type TouchEffect = 'hearts' | 'sparkles' | 'stardust'
@@ -162,15 +163,14 @@ const skyMemories: SkyMemory[] = [
     title: 'Los dos contra el mundo',
     text: 'Cada aventura contigo se convierte en una historia que quiero recordar para siempre.',
     photo: {
-      file: 'screen-02.png',
-      x: 54,
-      y: 346,
-      width: 269,
-      height: 337,
-      alt: 'Algenis y Lisbeth frente al espejo',
+      file: 'sky-world.jpg',
+      width: 960,
+      height: 1280,
+      alt: 'Algenis y Lisbeth disfrutando juntos de un día al aire libre',
       rotation: 1.2,
       motion: 'reflection-slide',
       touchEffect: 'sparkles',
+      fit: 'contain',
     },
   },
   {
@@ -181,15 +181,14 @@ const skyMemories: SkyMemory[] = [
     title: 'Lo que nadie ve',
     text: 'Las miradas cómplices, las risas sin explicación y esos pequeños momentos que solo entendemos tú y yo.',
     photo: {
-      file: 'screen-08.png',
-      x: 52,
-      y: 27,
-      width: 271,
-      height: 330,
-      alt: 'Un recuerdo de juventud de Algenis y Lisbeth',
+      file: 'sky-unseen.jpg',
+      width: 960,
+      height: 1280,
+      alt: 'Algenis y Lisbeth compartiendo un momento divertido',
       rotation: -1.3,
       motion: 'secret-rise',
       touchEffect: 'stardust',
+      fit: 'contain',
     },
   },
   {
@@ -411,8 +410,8 @@ function useCapsuleCountdown() {
 
 function CropPhoto({
   file,
-  x,
-  y,
+  x = 0,
+  y = 0,
   width,
   height,
   alt,
@@ -421,6 +420,7 @@ function CropPhoto({
   motion = 'soft-rise',
   touchEffect = 'hearts',
   priority = false,
+  fit = 'crop',
 }: CropPhotoProps) {
   const frameStyle = {
     aspectRatio: `${width} / ${height}`,
@@ -429,7 +429,7 @@ function CropPhoto({
 
   return (
     <figure
-      className={`crop-photo ${className}`}
+      className={`crop-photo ${fit === 'contain' ? 'crop-photo--contain' : ''} ${className}`}
       style={frameStyle}
       data-reveal={motion}
       data-photo-magic={touchEffect}
@@ -442,11 +442,13 @@ function CropPhoto({
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : undefined}
           decoding="async"
-          style={{
-            width: `${(402 / width) * 100}%`,
-            left: `${(-x / width) * 100}%`,
-            top: `${(-y / height) * 100}%`,
-          }}
+          style={fit === 'contain'
+            ? undefined
+            : {
+                width: `${(402 / width) * 100}%`,
+                left: `${(-x / width) * 100}%`,
+                top: `${(-y / height) * 100}%`,
+              }}
         />
       </div>
     </figure>
@@ -658,7 +660,6 @@ function App() {
     }
   })
   const [activeVoucher, setActiveVoucher] = useState<number | null>(null)
-  const [voucherResetNotice, setVoucherResetNotice] = useState(false)
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [wheelResult, setWheelResult] = useState('')
@@ -956,13 +957,6 @@ function App() {
   const redeemVoucher = (index: number) => {
     setRedeemed((current) => (current.includes(index) ? current : [...current, index]))
     setActiveVoucher(index)
-  }
-
-  const resetVouchers = () => {
-    setRedeemed([])
-    setActiveVoucher(null)
-    setVoucherResetNotice(true)
-    window.setTimeout(() => setVoucherResetNotice(false), 3_000)
   }
 
   const spinWheel = () => {
@@ -1441,15 +1435,14 @@ function App() {
         </div>
 
         <CropPhoto
-          file="screen-08.png"
-          x={52}
-          y={27}
-          width={271}
-          height={330}
+          file="map-youth-full.jpg"
+          width={719}
+          height={1280}
           alt="Un recuerdo de juventud de Algenis y Lisbeth"
           rotation={-1.9}
           motion="postcard-toss"
           touchEffect="stardust"
+          fit="contain"
           priority
         />
 
@@ -1521,12 +1514,6 @@ function App() {
       <section className="section-shell voucher-section" aria-labelledby="voucher-title">
         <SectionHeading eyebrow="Solo para ti" id="voucher-title">Nuestros vales de amor</SectionHeading>
         <p className="section-description">Canjéalos cuando quieras. Cada vale se usa una vez, pero su mensaje siempre puede volver a abrirse.</p>
-        <button className="voucher-reset" type="button" onClick={resetVouchers} disabled={redeemed.length === 0}>
-          <span aria-hidden="true">↻</span> Reiniciar vales
-        </button>
-        <p className={`voucher-reset-notice ${voucherResetNotice ? 'is-visible' : ''}`} aria-live="polite">
-          {voucherResetNotice ? 'Todos los vales vuelven a estar disponibles ♥' : ''}
-        </p>
         <div className="voucher-list">
           {vouchers.map((voucher, index) => {
             const isRedeemed = redeemed.includes(index)

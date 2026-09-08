@@ -482,6 +482,20 @@ h2,
   user-select: none;
 }
 
+.crop-photo--contain .crop-photo__viewport {
+  display: grid;
+  place-items: center;
+}
+
+.crop-photo--contain img {
+  position: static;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
 /* Every memory enters with its own cinematic movement. */
 .story-content.motion-ready [data-reveal] {
   --reveal-x: 0px;
@@ -1775,56 +1789,6 @@ figure[data-photo-magic] {
 
 .voucher-section {
   padding-top: 70px;
-}
-
-.voucher-reset {
-  display: inline-flex;
-  min-height: 44px;
-  margin: -4px auto 7px;
-  padding: 0 18px;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid rgba(224, 185, 79, 0.48);
-  border-radius: 999px;
-  color: #f1d98b;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  cursor: pointer;
-  background: rgba(15, 22, 55, 0.66);
-  transition: opacity 180ms ease, transform 180ms ease, background 180ms ease;
-}
-
-.voucher-reset:not(:disabled):hover {
-  transform: translateY(-2px);
-  background: rgba(41, 55, 102, 0.82);
-}
-
-.voucher-reset:disabled {
-  opacity: 0.38;
-  cursor: default;
-}
-
-.voucher-reset span {
-  color: var(--gold);
-  font-size: 1.05rem;
-}
-
-.voucher-reset-notice {
-  min-height: 20px;
-  margin: 2px 0 13px;
-  color: #f1dc99;
-  text-align: center;
-  font-family: var(--display);
-  font-size: 0.94rem;
-  font-style: italic;
-  opacity: 0;
-  transition: opacity 180ms ease;
-}
-
-.voucher-reset-notice.is-visible {
-  opacity: 1;
 }
 
 .voucher-list {

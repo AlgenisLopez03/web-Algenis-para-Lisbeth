@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { divIcon } from 'leaflet'
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -312,6 +312,9 @@ function App() {
   const elapsed = useAnniversaryClock()
   const capsuleCountdown = useCapsuleCountdown()
   const [storyOpened, setStoryOpened] = useState(false)
+  const [firstKissRevealed, setFirstKissRevealed] = useState(false)
+  const firstKissRef = useRef<HTMLElement | null>(null)
+  const videoRef = useRef<HTMLIFrameElement | null>(null)
   const [letterOpen, setLetterOpen] = useState(false)
   const [redeemed, setRedeemed] = useState<number[]>(() => {
     try {
@@ -406,6 +409,29 @@ function App() {
   }, [storyOpened])
 
   useEffect(() => {
+    if (!storyOpened || firstKissRevealed) return
+    const firstKissPhoto = firstKissRef.current
+    if (!firstKissPhoto) return
+
+    if (typeof IntersectionObserver === 'undefined') {
+      const fallbackTimer = window.setTimeout(() => setFirstKissRevealed(true), 0)
+      return () => window.clearTimeout(fallbackTimer)
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        setFirstKissRevealed(true)
+        observer.disconnect()
+      },
+      { threshold: 0.36 },
+    )
+
+    observer.observe(firstKissPhoto)
+    return () => observer.disconnect()
+  }, [firstKissRevealed, storyOpened])
+
+  useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       setActiveVoucher(null)
@@ -485,6 +511,18 @@ function App() {
     setGalleryPage((current) => (current + direction + galleryPageCount) % galleryPageCount)
   }
 
+  const requestVideoPlayback = () => {
+    videoRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+      'https://www.youtube-nocookie.com',
+    )
+  }
+
+  const openStory = () => {
+    setStoryOpened(true)
+    window.requestAnimationFrame(requestVideoPlayback)
+  }
+
   return (
     <main className="story">
       <div className="ambient-hearts" aria-hidden="true">
@@ -515,7 +553,7 @@ function App() {
             loading="eager"
             fetchPriority="high"
           />
-          <button className="cover-button" type="button" onClick={() => setStoryOpened(true)}>
+          <button className="cover-button" type="button" onClick={openStory}>
             Abrir nuestra historia <span aria-hidden="true">♥</span>
           </button>
         </section>
@@ -572,11 +610,13 @@ function App() {
         <SectionHeading eyebrow="Nuestra canción" id="song-title">Un recuerdo que siempre suena</SectionHeading>
         <div className="video-frame">
           <iframe
-            src="https://www.youtube-nocookie.com/embed/C3NxyNFT62w?autoplay=1&playsinline=1&rel=0"
+            ref={videoRef}
+            src="https://www.youtube-nocookie.com/embed/C3NxyNFT62w?autoplay=1&mute=0&playsinline=1&rel=0&enablejsapi=1"
             title="Nuestro video especial"
             loading="eager"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
+            onLoad={requestVideoPlayback}
           />
         </div>
       </section>
@@ -636,15 +676,23 @@ function App() {
         </div>
 
         <figure
-          className="crop-photo young-kiss-photo--complete"
+          ref={firstKissRef}
+          className={`crop-photo young-kiss-photo--complete first-kiss-moment ${firstKissRevealed ? 'is-revealed' : ''}`}
           style={{ aspectRatio: '498 / 1109', '--photo-rotation': '2.1deg' } as CSSProperties}
         >
           <div className="crop-photo__viewport">
             <img
               src={assetUrl('memories/complete-young-kiss.webp')}
-              alt="Algenis y Lisbeth compartiendo un beso"
+              alt="Algenis y Lisbeth compartiendo su primer beso"
               loading="lazy"
             />
+            <div className="first-kiss-reveal" aria-live="polite" aria-hidden={!firstKissRevealed}>
+              <span className="first-kiss-heart" aria-hidden="true">♥</span>
+              <p className="first-kiss-message">
+                <span>Nuestro primer beso</span>
+                <strong>Te amo con toda mi alma</strong>
+              </p>
+            </div>
           </div>
         </figure>
       </section>

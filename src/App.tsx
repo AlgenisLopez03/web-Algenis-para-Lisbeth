@@ -570,8 +570,8 @@ function App() {
         <SectionHeading eyebrow="Nuestra canción" id="song-title">Un recuerdo que siempre suena</SectionHeading>
         <div className="video-frame">
           <iframe
-            src="https://www.youtube-nocookie.com/embed/KtlgYxa6BMU?rel=0"
-            title="Lord Huron — The Night We Met"
+            src="https://www.youtube-nocookie.com/embed/C3NxyNFT62w?rel=0"
+            title="Nuestro video especial"
             loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen

@@ -501,11 +501,9 @@ h2,
 
 .gallery-memory {
   position: relative;
-  display: flex;
   min-width: 0;
   min-height: 0;
   margin: 0;
-  flex-direction: column;
   overflow: hidden;
   border-radius: 16px;
   background: #080d26;
@@ -517,39 +515,38 @@ h2,
 
 .gallery-memory img {
   display: block;
-  min-height: 0;
   width: 100%;
-  height: auto;
-  flex: 1 1 auto;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
   object-position: center;
-  background: linear-gradient(145deg, #070b1f, #172044);
   transition: transform 700ms ease;
 }
 
 .gallery-memory:hover img {
-  filter: brightness(1.04);
+  transform: scale(1.035);
 }
 
 .gallery-memory::after {
-  display: none;
+  position: absolute;
+  inset: 42% 0 0;
+  content: '';
+  pointer-events: none;
+  background: linear-gradient(transparent, rgba(2, 5, 18, 0.82));
 }
 
 .gallery-memory figcaption {
-  position: relative;
+  position: absolute;
   z-index: 1;
-  display: flex;
-  min-height: 57px;
-  padding: 9px 10px 10px;
-  justify-content: center;
-  flex-direction: column;
+  right: 11px;
+  bottom: 12px;
+  left: 11px;
   color: #fff8e5;
   font-family: var(--display);
   font-size: clamp(0.79rem, 3.3vw, 1.07rem);
   font-style: italic;
   font-weight: 600;
   line-height: 1.15;
-  background: rgba(8, 13, 38, 0.96);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 .gallery-memory figcaption span {
@@ -1803,11 +1800,9 @@ h2,
   }
 
   .gallery-memory figcaption {
-    right: auto;
-    bottom: auto;
-    left: auto;
-    min-height: 58px;
-    padding: 8px;
+    right: 8px;
+    bottom: 9px;
+    left: 8px;
   }
 
   .map-wrap {

@@ -29,6 +29,7 @@ type CropPhotoProps = {
   className?: string
   motion?: PhotoMotion
   touchEffect?: TouchEffect
+  priority?: boolean
 }
 
 type TouchEffect = 'hearts' | 'sparkles' | 'stardust'
@@ -419,6 +420,7 @@ function CropPhoto({
   className = '',
   motion = 'soft-rise',
   touchEffect = 'hearts',
+  priority = false,
 }: CropPhotoProps) {
   const frameStyle = {
     aspectRatio: `${width} / ${height}`,
@@ -437,7 +439,8 @@ function CropPhoto({
           src={assetUrl(`memories/${file}`)}
           alt={alt}
           draggable="false"
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : undefined}
           decoding="async"
           style={{
             width: `${(402 / width) * 100}%`,
@@ -773,31 +776,14 @@ function App() {
     if (!storyContent) return
 
     const revealElements = Array.from(storyContent.querySelectorAll<HTMLElement>('[data-reveal]'))
-    const pendingImageListeners: Array<() => void> = []
     const revealElement = (element: HTMLElement) => {
-      const image = element.matches('[data-photo-magic]')
-        ? element.matches('img')
-          ? element as HTMLImageElement
-          : element.querySelector('img')
-        : null
-      if (!image || image.complete) {
-        if (element.dataset.revealRequested === 'true') element.dataset.inView = 'true'
-        return
-      }
+      if (element.dataset.revealRequested === 'true') element.dataset.inView = 'true'
+    }
 
-      if (element.dataset.revealWaiting === 'true') return
-      element.dataset.revealWaiting = 'true'
-      const onReady = () => {
-        delete element.dataset.revealWaiting
-        if (element.dataset.revealRequested === 'true') element.dataset.inView = 'true'
-      }
-      image.addEventListener('load', onReady, { once: true })
-      image.addEventListener('error', onReady, { once: true })
-      pendingImageListeners.push(() => {
-        image.removeEventListener('load', onReady)
-        image.removeEventListener('error', onReady)
-        delete element.dataset.revealWaiting
-      })
+    const heroPhoto = storyContent.querySelector<HTMLElement>('.hero-photo')
+    if (heroPhoto) {
+      heroPhoto.dataset.revealRequested = 'true'
+      revealElement(heroPhoto)
     }
 
     if (
@@ -808,7 +794,7 @@ function App() {
         element.dataset.revealRequested = 'true'
         revealElement(element)
       })
-      return () => pendingImageListeners.forEach((removeListener) => removeListener())
+      return
     }
 
     const observer = new IntersectionObserver(
@@ -834,7 +820,6 @@ function App() {
 
     return () => {
       observer.disconnect()
-      pendingImageListeners.forEach((removeListener) => removeListener())
     }
   }, [activeMemory, galleryPage, storyOpened])
 
@@ -1193,6 +1178,7 @@ function App() {
           className="hero-photo"
           motion="polaroid-left"
           touchEffect="hearts"
+          priority
         />
         <div className="scroll-cue" aria-hidden="true">
           <span />

@@ -606,15 +606,18 @@ function App() {
       </section>
 
       <section className="section-shell memories-section" aria-label="Nuestros recuerdos">
-        <CropPhoto
-          file="screen-05.png"
-          x={49}
-          y={20}
-          width={268}
-          height={331}
-          alt="Collage de recuerdos de Algenis y Lisbeth"
-          rotation={-1.6}
-        />
+        <figure
+          className="crop-photo collage-photo--complete"
+          style={{ aspectRatio: '576 / 1280', '--photo-rotation': '-1.6deg' } as CSSProperties}
+        >
+          <div className="crop-photo__viewport">
+            <img
+              src="/memories/complete-collage.webp"
+              alt="Collage completo de recuerdos de Algenis y Lisbeth"
+              loading="lazy"
+            />
+          </div>
+        </figure>
 
         <div className="glass-card reasons-card">
           <h2 className="script">Lo que más amo de Lisbeth</h2>

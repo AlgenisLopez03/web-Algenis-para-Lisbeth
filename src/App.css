@@ -444,6 +444,15 @@ h2,
   padding-top: 30px;
 }
 
+.collage-photo--complete img {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
 .reasons-card {
   padding: 34px 27px;
   text-align: center;

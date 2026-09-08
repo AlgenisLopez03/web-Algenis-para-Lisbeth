@@ -1481,6 +1481,8 @@ h2,
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   background: linear-gradient(145deg, #eed37a, #c6972d);
 }
 
@@ -1490,7 +1492,13 @@ h2,
 }
 
 .voucher.is-redeemed {
-  opacity: 0.58;
+  opacity: 0.82;
+}
+
+.voucher.is-redeemed button {
+  border: 1px solid rgba(238, 211, 122, 0.62);
+  color: #f3dc98;
+  background: rgba(8, 14, 40, 0.52);
 }
 
 .voucher button:disabled,
@@ -1836,11 +1844,19 @@ h2,
 
 .modal-backdrop {
   position: fixed;
-  z-index: 30;
+  z-index: 1000;
   display: grid;
   inset: 0;
-  padding: 22px;
+  min-height: 100dvh;
+  padding:
+    max(22px, env(safe-area-inset-top))
+    max(22px, env(safe-area-inset-right))
+    max(22px, env(safe-area-inset-bottom))
+    max(22px, env(safe-area-inset-left));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   place-items: center;
+  touch-action: manipulation;
   background: rgba(3, 6, 24, 0.76);
   backdrop-filter: blur(9px);
   animation: modal-backdrop-in 240ms ease both;

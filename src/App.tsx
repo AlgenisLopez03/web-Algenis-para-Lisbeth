@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { flushSync } from 'react-dom'
+import { createPortal, flushSync } from 'react-dom'
 import { divIcon } from 'leaflet'
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -329,6 +329,7 @@ function App() {
   const [storyOpened, setStoryOpened] = useState(false)
   const [firstKissRevealed, setFirstKissRevealed] = useState(false)
   const firstKissRef = useRef<HTMLElement | null>(null)
+  const firstKissInViewRef = useRef(false)
   const videoRef = useRef<HTMLIFrameElement | null>(null)
   const [letterOpen, setLetterOpen] = useState(false)
   const [redeemed, setRedeemed] = useState<number[]>(() => {
@@ -424,7 +425,7 @@ function App() {
   }, [storyOpened])
 
   useEffect(() => {
-    if (!storyOpened || firstKissRevealed) return
+    if (!storyOpened) return
     const firstKissPhoto = firstKissRef.current
     if (!firstKissPhoto) return
 
@@ -435,16 +436,26 @@ function App() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) return
-        setFirstKissRevealed(true)
-        observer.disconnect()
+        if (entry.intersectionRatio >= 0.32 && !firstKissInViewRef.current) {
+          firstKissInViewRef.current = true
+          setFirstKissRevealed(true)
+          return
+        }
+
+        if (entry.intersectionRatio <= 0.08 && firstKissInViewRef.current) {
+          firstKissInViewRef.current = false
+          setFirstKissRevealed(false)
+        }
       },
-      { threshold: 0.36 },
+      { threshold: [0.08, 0.32] },
     )
 
     observer.observe(firstKissPhoto)
-    return () => observer.disconnect()
-  }, [firstKissRevealed, storyOpened])
+    return () => {
+      firstKissInViewRef.current = false
+      observer.disconnect()
+    }
+  }, [storyOpened])
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -460,8 +471,7 @@ function App() {
   }, [])
 
   const redeemVoucher = (index: number) => {
-    if (redeemed.includes(index)) return
-    setRedeemed((current) => [...current, index])
+    setRedeemed((current) => (current.includes(index) ? current : [...current, index]))
     setActiveVoucher(index)
   }
 
@@ -968,7 +978,7 @@ function App() {
 
       <section className="section-shell voucher-section" aria-labelledby="voucher-title">
         <SectionHeading eyebrow="Solo para ti" id="voucher-title">Nuestros vales de amor</SectionHeading>
-        <p className="section-description">Canjéalos cuando quieras. Pero cada vale solo se puede usar una vez.</p>
+        <p className="section-description">Canjéalos cuando quieras. Cada vale se usa una vez, pero su mensaje siempre puede volver a abrirse.</p>
         <button className="voucher-reset" type="button" onClick={resetVouchers} disabled={redeemed.length === 0}>
           <span aria-hidden="true">↻</span> Reiniciar vales
         </button>
@@ -985,8 +995,8 @@ function App() {
                   <span>Vale</span>
                   <h3>{voucher}</h3>
                 </div>
-                <button type="button" disabled={isRedeemed} onClick={() => redeemVoucher(index)}>
-                  {isRedeemed ? 'Canjeado' : 'Canjear'}
+                <button type="button" onClick={() => redeemVoucher(index)}>
+                  {isRedeemed ? 'Ver mensaje' : 'Canjear'}
                 </button>
               </article>
             )
@@ -1084,7 +1094,7 @@ function App() {
         <p className="forever">♥&nbsp;&nbsp; Para siempre &nbsp;&nbsp;♥</p>
       </section>
 
-      {activeVoucher !== null && (
+      {activeVoucher !== null && createPortal(
         <div className="modal-backdrop" onClick={() => setActiveVoucher(null)}>
           <article
             className="romantic-modal"
@@ -1102,10 +1112,11 @@ function App() {
             <p>{voucherMessages[activeVoucher]}</p>
             <button type="button" onClick={() => setActiveVoucher(null)}>Guardar este momento</button>
           </article>
-        </div>
+        </div>,
+        document.body,
       )}
 
-      {wheelRevealOpen && wheelResult && (
+      {wheelRevealOpen && wheelResult && createPortal(
         <div className="modal-backdrop" onClick={() => setWheelRevealOpen(false)}>
           <article
             className="romantic-modal wheel-modal"
@@ -1123,7 +1134,8 @@ function App() {
             <p>{wheelMessages[wheelResult]}</p>
             <button type="button" onClick={() => setWheelRevealOpen(false)}>Aceptamos el plan</button>
           </article>
-        </div>
+        </div>,
+        document.body,
       )}
         </div>
     </main>

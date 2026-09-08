@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { flushSync } from 'react-dom'
 import { divIcon } from 'leaflet'
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -156,6 +157,20 @@ const starPositions = [
   { left: '63%', top: '63%', delay: '-1.2s' },
   { left: '84%', top: '76%', delay: '-2.8s' },
 ]
+
+const firstKissConfetti = Array.from({ length: 34 }, (_, index) => ({
+  angle: `${index * 10.59 + (index % 3) * 3}deg`,
+  distance: `-${230 + (index % 7) * 42}px`,
+  delay: `${0.52 + (index % 6) * 0.055}s`,
+  spin: `${180 + (index % 5) * 105}deg`,
+  color: ['#dfb94f', '#fff3bf', '#df3045', '#f58aa4', '#ffffff'][index % 5],
+}))
+
+const firstKissArrows = [-158, -116, -72, -28, 18, 62, 108, 151].map((angle, index) => ({
+  angle: `${angle}deg`,
+  distance: `${220 + (index % 3) * 52}px`,
+  delay: `${0.66 + (index % 4) * 0.08}s`,
+}))
 
 const galleryPhotos: GalleryPhoto[] = [
   { file: 'gallery-01.webp', title: 'Un día para recordar', alt: 'Algenis y Lisbeth juntos en la playa' },
@@ -512,14 +527,21 @@ function App() {
   }
 
   const requestVideoPlayback = () => {
-    videoRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-      'https://www.youtube-nocookie.com',
-    )
+    const playerWindow = videoRef.current?.contentWindow
+    if (!playerWindow) return
+
+    const sendCommand = (func: string, args: unknown[] = []) => {
+      playerWindow.postMessage(JSON.stringify({ event: 'command', func, args }), 'https://www.youtube-nocookie.com')
+    }
+
+    sendCommand('unMute')
+    sendCommand('setVolume', [100])
+    sendCommand('playVideo')
   }
 
   const openStory = () => {
-    setStoryOpened(true)
+    flushSync(() => setStoryOpened(true))
+    requestVideoPlayback()
     window.requestAnimationFrame(requestVideoPlayback)
   }
 
@@ -544,7 +566,46 @@ function App() {
         ))}
       </div>
 
-      {!storyOpened ? (
+      {firstKissRevealed && (
+        <div className="first-kiss-celebration" aria-hidden="true">
+          <span className="celebration-flash" />
+          <span className="celebration-main-heart">♥</span>
+          <div className="celebration-arrows">
+            {firstKissArrows.map((arrow, index) => (
+              <span
+                key={index}
+                style={
+                  {
+                    '--arrow-angle': arrow.angle,
+                    '--arrow-distance': arrow.distance,
+                    '--arrow-delay': arrow.delay,
+                  } as CSSProperties
+                }
+              >
+                ➵
+              </span>
+            ))}
+          </div>
+          <div className="celebration-confetti">
+            {firstKissConfetti.map((piece, index) => (
+              <span
+                key={index}
+                style={
+                  {
+                    '--confetti-angle': piece.angle,
+                    '--confetti-distance': piece.distance,
+                    '--confetti-delay': piece.delay,
+                    '--confetti-spin': piece.spin,
+                    '--confetti-color': piece.color,
+                  } as CSSProperties
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!storyOpened && (
         <section className="cover-section section-shell" aria-label="Portada de Algenis y Lisbeth">
           <img
             className="cover-art"
@@ -557,8 +618,14 @@ function App() {
             Abrir nuestra historia <span aria-hidden="true">♥</span>
           </button>
         </section>
-      ) : (
-        <div className="story-content">
+      )}
+        <div
+          className={`story-content ${storyOpened ? 'is-open' : 'is-preloading'}`}
+          aria-hidden={!storyOpened}
+        >
+      <button className="music-control" type="button" onClick={requestVideoPlayback}>
+        <span aria-hidden="true">♪</span> Música
+      </button>
       <section id="story-start" className="hero-section section-shell" aria-labelledby="main-title">
         <p className="hero-kicker">Nuestra historia</p>
         <h1 id="main-title">
@@ -595,15 +662,18 @@ function App() {
           </p>
           <p className="anniversary-since">Desde el 29 de noviembre de 2019 · 23:55</p>
         </div>
-        <CropPhoto
-          file="screen-02.png"
-          x={54}
-          y={346}
-          width={269}
-          height={337}
-          alt="Algenis y Lisbeth frente al espejo"
-          rotation={1.8}
-        />
+        <figure
+          className="crop-photo anniversary-photo--complete"
+          style={{ aspectRatio: '3 / 4', '--photo-rotation': '1.8deg' } as CSSProperties}
+        >
+          <div className="crop-photo__viewport">
+            <img
+              src={assetUrl('memories/anniversary-mirror.png')}
+              alt="Algenis y Lisbeth juntos frente al espejo"
+              loading="eager"
+            />
+          </div>
+        </figure>
       </section>
 
       <section className="section-shell video-section" aria-labelledby="song-title">
@@ -611,12 +681,14 @@ function App() {
         <div className="video-frame">
           <iframe
             ref={videoRef}
-            src={`https://www.youtube-nocookie.com/embed/C3NxyNFT62w?autoplay=1&mute=0&playsinline=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
+            src={`https://www.youtube-nocookie.com/embed/C3NxyNFT62w?autoplay=0&playsinline=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
             title="Nuestro video especial"
             loading="eager"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
-            onLoad={requestVideoPlayback}
+            onLoad={() => {
+              if (storyOpened) requestVideoPlayback()
+            }}
           />
         </div>
       </section>
@@ -687,7 +759,6 @@ function App() {
               loading="lazy"
             />
             <div className="first-kiss-reveal" aria-live="polite" aria-hidden={!firstKissRevealed}>
-              <span className="first-kiss-heart" aria-hidden="true">♥</span>
               <p className="first-kiss-message">
                 <span>Nuestro primer beso</span>
                 <strong>Te amo con toda mi alma</strong>
@@ -1055,7 +1126,6 @@ function App() {
         </div>
       )}
         </div>
-      )}
     </main>
   )
 }

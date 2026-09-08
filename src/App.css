@@ -159,8 +159,50 @@ h2,
   color: var(--gold);
 }
 
-.story-content {
+.story-content.is-open {
   animation: story-reveal 650ms ease both;
+}
+
+.story-content.is-preloading {
+  position: absolute;
+  top: 100svh;
+  right: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.music-control {
+  position: fixed;
+  z-index: 12;
+  top: max(14px, calc(env(safe-area-inset-top) + 8px));
+  right: max(14px, calc((100vw - 720px) / 2 + 14px));
+  display: flex;
+  min-height: 42px;
+  padding: 9px 15px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(224, 185, 79, 0.64);
+  border-radius: 999px;
+  color: var(--cream);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: rgba(10, 16, 44, 0.88);
+  box-shadow: 0 8px 24px rgba(0, 2, 18, 0.38);
+  backdrop-filter: blur(9px);
+}
+
+.music-control span {
+  color: var(--gold-soft);
+  font-size: 1rem;
+}
+
+.music-control:active {
+  transform: scale(0.96);
 }
 
 @keyframes story-reveal {
@@ -452,6 +494,7 @@ h2,
   padding-top: 30px;
 }
 
+.anniversary-photo--complete img,
 .collage-photo--complete img,
 .young-kiss-photo--complete img {
   top: 0;
@@ -460,6 +503,63 @@ h2,
   height: 100%;
   object-fit: contain;
   object-position: center;
+}
+
+.first-kiss-celebration {
+  position: fixed;
+  z-index: 35;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  animation: first-kiss-celebration-out 3.1s ease both;
+}
+
+.celebration-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(circle at center, rgba(255, 238, 174, 0.5), rgba(217, 40, 53, 0.18) 25%, transparent 62%);
+  animation: celebration-flash 1.8s ease-out both;
+}
+
+.celebration-main-heart {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: #d92835;
+  font-size: clamp(6.5rem, 33vw, 13rem);
+  line-height: 1;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.08);
+  text-shadow: 0 0 18px rgba(255, 116, 126, 0.98), 0 0 58px rgba(217, 40, 53, 0.9), 0 0 110px rgba(223, 185, 79, 0.5);
+  animation: celebration-heart-bloom 2.35s cubic-bezier(0.18, 0.74, 0.25, 1) both;
+}
+
+.celebration-arrows span,
+.celebration-confetti span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+}
+
+.celebration-arrows span {
+  color: var(--gold-soft);
+  font-family: Georgia, serif;
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  filter: drop-shadow(0 0 8px rgba(255, 229, 145, 0.9));
+  transform: translate(-50%, -50%) rotate(var(--arrow-angle)) translateX(0) scale(0.4);
+  animation: celebration-arrow-shot 1.35s cubic-bezier(0.16, 0.72, 0.2, 1) var(--arrow-delay) both;
+}
+
+.celebration-confetti span {
+  width: clamp(7px, 2.2vw, 11px);
+  height: clamp(12px, 3.5vw, 18px);
+  border-radius: 3px;
+  background: var(--confetti-color);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--confetti-color), transparent 35%);
+  transform: translate(-50%, -50%) rotate(var(--confetti-angle)) translateY(0) rotate(0);
+  animation: celebration-confetti-burst 1.85s cubic-bezier(0.15, 0.7, 0.18, 1) var(--confetti-delay) both;
 }
 
 .first-kiss-moment {
@@ -477,22 +577,6 @@ h2,
 
 .first-kiss-moment.is-revealed .first-kiss-reveal {
   opacity: 1;
-}
-
-.first-kiss-heart {
-  position: absolute;
-  top: 45%;
-  left: 50%;
-  color: #d92835;
-  font-size: clamp(4.5rem, 24vw, 7.5rem);
-  line-height: 1;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.12);
-  text-shadow: 0 0 14px rgba(255, 91, 103, 0.95), 0 0 42px rgba(217, 40, 53, 0.82);
-}
-
-.first-kiss-moment.is-revealed .first-kiss-heart {
-  animation: first-kiss-heart-bloom 1.9s cubic-bezier(0.2, 0.72, 0.28, 1) both;
 }
 
 .first-kiss-message {
@@ -536,14 +620,39 @@ h2,
 }
 
 .first-kiss-moment.is-revealed .first-kiss-message {
-  animation: first-kiss-message-in 1.15s cubic-bezier(0.2, 0.75, 0.25, 1) 1.55s forwards;
+  animation: first-kiss-message-in 1.15s cubic-bezier(0.2, 0.75, 0.25, 1) 2.55s forwards;
 }
 
-@keyframes first-kiss-heart-bloom {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.12); }
+@keyframes first-kiss-celebration-out {
+  0%, 82% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes celebration-flash {
+  0% { opacity: 0; transform: scale(0.45); }
+  28% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+
+@keyframes celebration-heart-bloom {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.08) rotate(-9deg); }
   14% { opacity: 1; }
-  62% { opacity: 0.98; transform: translate(-50%, -50%) scale(2.25); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(3.8); filter: blur(3px); }
+  48% { opacity: 1; transform: translate(-50%, -50%) scale(1.08) rotate(5deg); }
+  62% { opacity: 1; transform: translate(-50%, -50%) scale(0.92) rotate(-2deg); }
+  78% { opacity: 0.98; transform: translate(-50%, -50%) scale(1.3) rotate(0); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(3.45); filter: blur(4px); }
+}
+
+@keyframes celebration-arrow-shot {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--arrow-angle)) translateX(0) scale(0.4); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--arrow-angle)) translateX(var(--arrow-distance)) scale(1.15); }
+}
+
+@keyframes celebration-confetti-burst {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--confetti-angle)) translateY(0) rotate(0); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--confetti-angle)) translateY(var(--confetti-distance)) rotate(var(--confetti-spin)); }
 }
 
 @keyframes first-kiss-message-in {
@@ -1987,7 +2096,7 @@ h2,
     transition-duration: 0.01ms;
   }
 
-  .first-kiss-moment.is-revealed .first-kiss-heart {
+  .first-kiss-celebration {
     display: none;
   }
 

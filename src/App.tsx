@@ -27,7 +27,35 @@ type CropPhotoProps = {
   alt: string
   rotation?: number
   className?: string
+  motion?: PhotoMotion
+  touchEffect?: TouchEffect
 }
+
+type TouchEffect = 'hearts' | 'sparkles' | 'stardust'
+
+type PhotoMotion =
+  | 'soft-rise'
+  | 'polaroid-left'
+  | 'mirror-glide'
+  | 'film-unroll'
+  | 'kiss-focus'
+  | 'postcard-toss'
+  | 'star-bloom'
+  | 'reflection-slide'
+  | 'secret-rise'
+  | 'final-focus'
+  | 'tide-rise'
+  | 'candle-glow'
+  | 'bubble-lift'
+  | 'snow-settle'
+  | 'adventure-sweep'
+  | 'diploma-left'
+  | 'diploma-right'
+  | 'mirror-focus'
+  | 'ripple-in'
+  | 'embrace-zoom'
+  | 'window-slide'
+  | 'safe-settle'
 
 type SkyMemory = {
   title: string
@@ -54,6 +82,20 @@ type GalleryPhoto = {
   file: string
   title: string
   alt: string
+  motion: PhotoMotion
+  touchEffect: TouchEffect
+}
+
+type TouchBurst = {
+  id: number
+  x: number
+  y: number
+  effect: TouchEffect
+}
+
+type ScreenEffect = {
+  id: number
+  type: 'shooting-star' | 'heart-shower' | 'golden-flare'
 }
 
 const vouchers = [
@@ -107,6 +149,8 @@ const skyMemories: SkyMemory[] = [
       height: 338,
       alt: 'Algenis y Lisbeth abrazados',
       rotation: -1.5,
+      motion: 'star-bloom',
+      touchEffect: 'hearts',
     },
   },
   {
@@ -124,6 +168,8 @@ const skyMemories: SkyMemory[] = [
       height: 337,
       alt: 'Algenis y Lisbeth frente al espejo',
       rotation: 1.2,
+      motion: 'reflection-slide',
+      touchEffect: 'sparkles',
     },
   },
   {
@@ -141,6 +187,8 @@ const skyMemories: SkyMemory[] = [
       height: 330,
       alt: 'Un recuerdo de juventud de Algenis y Lisbeth',
       rotation: -1.3,
+      motion: 'secret-rise',
+      touchEffect: 'stardust',
     },
   },
   {
@@ -158,7 +206,7 @@ const starPositions = [
   { left: '84%', top: '76%', delay: '-2.8s' },
 ]
 
-const firstKissConfetti = Array.from({ length: 34 }, (_, index) => ({
+const firstKissConfetti = Array.from({ length: 22 }, (_, index) => ({
   angle: `${index * 10.59 + (index % 3) * 3}deg`,
   distance: `-${230 + (index % 7) * 42}px`,
   delay: `${0.52 + (index % 6) * 0.055}s`,
@@ -166,29 +214,119 @@ const firstKissConfetti = Array.from({ length: 34 }, (_, index) => ({
   color: ['#dfb94f', '#fff3bf', '#df3045', '#f58aa4', '#ffffff'][index % 5],
 }))
 
-const firstKissArrows = [-158, -116, -72, -28, 18, 62, 108, 151].map((angle, index) => ({
+const firstKissArrows = [-148, -92, -34, 28, 84, 144].map((angle, index) => ({
   angle: `${angle}deg`,
   distance: `${220 + (index % 3) * 52}px`,
   delay: `${0.66 + (index % 4) * 0.08}s`,
 }))
 
+const touchBurstParticles = Array.from({ length: 8 }, (_, index) => ({
+  angle: `${index * 45 - 12}deg`,
+  distance: `-${42 + (index % 3) * 15}px`,
+  delay: `${(index % 4) * 0.035}s`,
+  size: `${12 + (index % 3) * 3}px`,
+}))
+
+const screenHeartParticles = Array.from({ length: 14 }, (_, index) => ({
+  left: `${5 + ((index * 29) % 91)}%`,
+  delay: `${(index % 7) * 0.09}s`,
+  duration: `${1.55 + (index % 4) * 0.18}s`,
+  drift: `${-34 + (index % 6) * 14}px`,
+  size: `${13 + (index % 5) * 4}px`,
+}))
+
+const screenSparkParticles = Array.from({ length: 12 }, (_, index) => ({
+  angle: `${index * 30}deg`,
+  distance: `-${110 + (index % 4) * 32}px`,
+  delay: `${0.1 + (index % 6) * 0.055}s`,
+  size: `${7 + (index % 3) * 4}px`,
+}))
+
 const galleryPhotos: GalleryPhoto[] = [
-  { file: 'gallery-01.webp', title: 'Un día para recordar', alt: 'Algenis y Lisbeth juntos en la playa' },
+  {
+    file: 'gallery-01.webp',
+    title: 'Un día para recordar',
+    alt: 'Algenis y Lisbeth juntos en la playa',
+    motion: 'tide-rise',
+    touchEffect: 'sparkles',
+  },
   {
     file: 'gallery-02.webp',
     title: 'Nuestra primera Navidad viviendo juntos como pareja',
     alt: 'Algenis y Lisbeth en su primera Navidad viviendo juntos',
+    motion: 'candle-glow',
+    touchEffect: 'stardust',
   },
-  { file: 'gallery-03.webp', title: 'Un beso entre burbujas', alt: 'Algenis y Lisbeth besándose entre burbujas' },
-  { file: 'gallery-04.webp', title: 'Navidad y amor', alt: 'Algenis y Lisbeth besándose frente a un árbol de Navidad' },
-  { file: 'gallery-05.webp', title: 'Aventuras contigo', alt: 'Algenis y Lisbeth compartiendo una aventura en four wheel' },
-  { file: 'gallery-06.webp', title: 'Celebrando tus logros', alt: 'Algenis acompañando a Lisbeth en su graduación' },
-  { file: 'gallery-07.webp', title: 'Celebrando mis logros contigo', alt: 'Lisbeth acompañando a Algenis en su graduación' },
-  { file: 'gallery-08.webp', title: 'Una noche solo nuestra', alt: 'Algenis y Lisbeth juntos frente al espejo' },
-  { file: 'gallery-09.webp', title: 'Días de sol contigo', alt: 'Algenis y Lisbeth disfrutando juntos de la piscina' },
-  { file: 'gallery-10.webp', title: 'Mi lugar favorito', alt: 'Algenis y Lisbeth compartiendo un momento romántico' },
-  { file: 'gallery-11.webp', title: 'Besos robados', alt: 'Algenis y Lisbeth a punto de besarse en el automóvil' },
-  { file: 'gallery-12.webp', title: 'Mi lugar seguro', alt: 'Lisbeth descansando abrazada a Algenis' },
+  {
+    file: 'gallery-03.webp',
+    title: 'Un beso entre burbujas',
+    alt: 'Algenis y Lisbeth besándose entre burbujas',
+    motion: 'bubble-lift',
+    touchEffect: 'sparkles',
+  },
+  {
+    file: 'gallery-04.webp',
+    title: 'Navidad y amor',
+    alt: 'Algenis y Lisbeth besándose frente a un árbol de Navidad',
+    motion: 'snow-settle',
+    touchEffect: 'stardust',
+  },
+  {
+    file: 'gallery-05.webp',
+    title: 'Aventuras contigo',
+    alt: 'Algenis y Lisbeth compartiendo una aventura en four wheel',
+    motion: 'adventure-sweep',
+    touchEffect: 'hearts',
+  },
+  {
+    file: 'gallery-06.webp',
+    title: 'Celebrando tus logros',
+    alt: 'Algenis acompañando a Lisbeth en su graduación',
+    motion: 'diploma-left',
+    touchEffect: 'sparkles',
+  },
+  {
+    file: 'gallery-07.webp',
+    title: 'Celebrando mis logros contigo',
+    alt: 'Lisbeth acompañando a Algenis en su graduación',
+    motion: 'diploma-right',
+    touchEffect: 'sparkles',
+  },
+  {
+    file: 'gallery-08.webp',
+    title: 'Una noche solo nuestra',
+    alt: 'Algenis y Lisbeth juntos frente al espejo',
+    motion: 'mirror-focus',
+    touchEffect: 'stardust',
+  },
+  {
+    file: 'gallery-09.webp',
+    title: 'Días de sol contigo',
+    alt: 'Algenis y Lisbeth disfrutando juntos de la piscina',
+    motion: 'ripple-in',
+    touchEffect: 'sparkles',
+  },
+  {
+    file: 'gallery-10.webp',
+    title: 'Mi lugar favorito',
+    alt: 'Algenis y Lisbeth compartiendo un momento romántico',
+    motion: 'embrace-zoom',
+    touchEffect: 'hearts',
+  },
+  {
+    file: 'gallery-11.webp',
+    title: 'Besos robados',
+    alt: 'Algenis y Lisbeth a punto de besarse en el automóvil',
+    motion: 'window-slide',
+    touchEffect: 'hearts',
+  },
+  {
+    file: 'gallery-12.webp',
+    title: 'Mi lugar seguro',
+    alt: 'Lisbeth descansando abrazada a Algenis',
+    motion: 'safe-settle',
+    touchEffect: 'hearts',
+  },
 ]
 
 const SAN_JUAN_CENTER: [number, number] = [18.8064, -71.22626]
@@ -279,6 +417,8 @@ function CropPhoto({
   alt,
   rotation = 0,
   className = '',
+  motion = 'soft-rise',
+  touchEffect = 'hearts',
 }: CropPhotoProps) {
   const frameStyle = {
     aspectRatio: `${width} / ${height}`,
@@ -286,13 +426,19 @@ function CropPhoto({
   } as CSSProperties
 
   return (
-    <figure className={`crop-photo ${className}`} style={frameStyle}>
+    <figure
+      className={`crop-photo ${className}`}
+      style={frameStyle}
+      data-reveal={motion}
+      data-photo-magic={touchEffect}
+    >
       <div className="crop-photo__viewport">
         <img
           src={assetUrl(`memories/${file}`)}
           alt={alt}
           draggable="false"
           loading="lazy"
+          decoding="async"
           style={{
             width: `${(402 / width) * 100}%`,
             left: `${(-x / width) * 100}%`,
@@ -313,6 +459,164 @@ function SectionHeading({ eyebrow, children, id }: { eyebrow: string; children: 
   )
 }
 
+function AnniversaryCard() {
+  const elapsed = useAnniversaryClock()
+
+  return (
+    <div className="glass-card anniversary-card" data-reveal="card-bloom">
+      <p id="anniversary-title" className="script intro-script">Juntos desde hace</p>
+      <p className="anniversary-main" aria-live="off">
+        {elapsed.years} años, {elapsed.months} meses y<br />
+        {elapsed.days} días
+      </p>
+      <p className="anniversary-clock">
+        <span>{String(elapsed.hours).padStart(2, '0')}h</span>
+        <span>{String(elapsed.minutes).padStart(2, '0')}m</span>
+        <span>{String(elapsed.seconds).padStart(2, '0')}s</span>
+      </p>
+      <p className="anniversary-since">Desde el 29 de noviembre de 2019 · 23:55</p>
+    </div>
+  )
+}
+
+function TimeCapsuleSection() {
+  const capsuleCountdown = useCapsuleCountdown()
+  const [capsuleOpen, setCapsuleOpen] = useState(false)
+
+  return (
+    <section className="section-shell capsule-section" aria-labelledby="capsule-title">
+      <div
+        className={`glass-card time-capsule ${capsuleCountdown.unlocked ? 'is-unlocked' : ''}`}
+        data-reveal="vault-rise"
+      >
+        <SectionHeading eyebrow="Para nuestro futuro" id="capsule-title">Cápsula del tiempo</SectionHeading>
+        <div className="capsule-lock" aria-hidden="true"><span>♥</span></div>
+
+        {!capsuleCountdown.unlocked ? (
+          <>
+            <p className="capsule-intro">Hay palabras que merecen esperar el momento perfecto.</p>
+            <time dateTime="2026-11-29T00:00:00-04:00">Se abrirá el 29 de noviembre de 2026</time>
+            <div className="capsule-countdown" aria-label="Tiempo restante para abrir la cápsula" aria-live="off">
+              <div><strong>{capsuleCountdown.days}</strong><span>Días</span></div>
+              <div><strong>{String(capsuleCountdown.hours).padStart(2, '0')}</strong><span>Horas</span></div>
+              <div><strong>{String(capsuleCountdown.minutes).padStart(2, '0')}</strong><span>Min</span></div>
+              <div><strong>{String(capsuleCountdown.seconds).padStart(2, '0')}</strong><span>Seg</span></div>
+            </div>
+            <p className="capsule-status"><span aria-hidden="true">✦</span> El tiempo está guardando este mensaje para nosotros</p>
+          </>
+        ) : !capsuleOpen ? (
+          <div className="capsule-ready">
+            <p className="script">La espera terminó. Este mensaje ya es nuestro.</p>
+            <button type="button" onClick={() => setCapsuleOpen(true)}>Abrir cápsula</button>
+          </div>
+        ) : (
+          <article className="capsule-message">
+            <p className="eyebrow">Un mensaje desde nuestro pasado</p>
+            <p className="script">
+              Si estás leyendo esto, llegamos juntos a otro aniversario. Gracias por seguir siendo
+              mi lugar favorito, mi calma y mi aventura. Quiero seguir eligiéndote en cada versión
+              de nosotros. Te amo, Lisbeth.
+            </p>
+            <p className="script capsule-signature">Algenis</p>
+            <button type="button" onClick={() => setCapsuleOpen(false)}>Cerrar con amor</button>
+          </article>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function ScreenRomanceEffect({ effect }: { effect: ScreenEffect | null }) {
+  if (!effect) return null
+
+  return (
+    <div key={effect.id} className={`screen-romance-effect screen-romance-effect--${effect.type}`} aria-hidden="true">
+      {effect.type === 'shooting-star' && (
+        <>
+          <span className="screen-shooting-star">✦</span>
+          <span className="screen-star-glow" />
+        </>
+      )}
+
+      {effect.type === 'heart-shower' && screenHeartParticles.map((particle, index) => (
+        <span
+          className="screen-floating-heart"
+          key={index}
+          style={
+            {
+              '--screen-left': particle.left,
+              '--screen-delay': particle.delay,
+              '--screen-duration': particle.duration,
+              '--screen-drift': particle.drift,
+              '--screen-size': particle.size,
+            } as CSSProperties
+          }
+        >
+          ♥
+        </span>
+      ))}
+
+      {effect.type === 'golden-flare' && (
+        <>
+          <span className="screen-golden-flare" />
+          <span className="screen-golden-ring screen-golden-ring--one" />
+          <span className="screen-golden-ring screen-golden-ring--two" />
+          {screenSparkParticles.map((particle, index) => (
+            <span
+              className="screen-golden-spark"
+              key={index}
+              style={
+                {
+                  '--screen-angle': particle.angle,
+                  '--screen-distance': particle.distance,
+                  '--screen-delay': particle.delay,
+                  '--screen-size': particle.size,
+                } as CSSProperties
+              }
+            >
+              ✦
+            </span>
+          ))}
+        </>
+      )}
+    </div>
+  )
+}
+
+function TouchBurstLayer({ bursts }: { bursts: TouchBurst[] }) {
+  if (bursts.length === 0) return null
+
+  return (
+    <div className="photo-touch-layer" aria-hidden="true">
+      {bursts.map((burst) => (
+        <span
+          className={`photo-touch-burst photo-touch-burst--${burst.effect}`}
+          key={burst.id}
+          style={{ '--tap-x': `${burst.x}px`, '--tap-y': `${burst.y}px` } as CSSProperties}
+        >
+          <span className="photo-touch-core">{burst.effect === 'hearts' ? '♥' : '✦'}</span>
+          {touchBurstParticles.map((particle, index) => (
+            <span
+              className="photo-touch-particle"
+              key={index}
+              style={
+                {
+                  '--tap-angle': particle.angle,
+                  '--tap-distance': particle.distance,
+                  '--tap-delay': particle.delay,
+                  '--tap-size': particle.size,
+                } as CSSProperties
+              }
+            >
+              {burst.effect === 'hearts' || (burst.effect === 'stardust' && index % 3 === 0) ? '♥' : '✦'}
+            </span>
+          ))}
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function MapHeartAdder({ onPlace }: { onPlace: (position: [number, number]) => void }) {
   useMapEvents({
     click(event) {
@@ -324,12 +628,18 @@ function MapHeartAdder({ onPlace }: { onPlace: (position: [number, number]) => v
 }
 
 function App() {
-  const elapsed = useAnniversaryClock()
-  const capsuleCountdown = useCapsuleCountdown()
   const [storyOpened, setStoryOpened] = useState(false)
   const [firstKissRevealed, setFirstKissRevealed] = useState(false)
+  const [firstKissCelebrating, setFirstKissCelebrating] = useState(false)
   const firstKissRef = useRef<HTMLElement | null>(null)
   const firstKissInViewRef = useRef(false)
+  const firstKissTimerRef = useRef<number | null>(null)
+  const storyContentRef = useRef<HTMLDivElement | null>(null)
+  const gallerySectionRef = useRef<HTMLElement | null>(null)
+  const screenEffectTimerRef = useRef<number | null>(null)
+  const galleryPauseTimerRef = useRef<number | null>(null)
+  const touchBurstIdRef = useRef(0)
+  const touchBurstTimersRef = useRef(new Set<number>())
   const videoRef = useRef<HTMLIFrameElement | null>(null)
   const [letterOpen, setLetterOpen] = useState(false)
   const [redeemed, setRedeemed] = useState<number[]>(() => {
@@ -351,8 +661,12 @@ function App() {
   const [wheelResult, setWheelResult] = useState('')
   const [wheelRevealOpen, setWheelRevealOpen] = useState(false)
   const [activeMemory, setActiveMemory] = useState<number | null>(null)
-  const [capsuleOpen, setCapsuleOpen] = useState(false)
   const [galleryPage, setGalleryPage] = useState(0)
+  const [galleryInView, setGalleryInView] = useState(false)
+  const [galleryPaused, setGalleryPaused] = useState(false)
+  const [pageVisible, setPageVisible] = useState(() => document.visibilityState === 'visible')
+  const [screenEffect, setScreenEffect] = useState<ScreenEffect | null>(null)
+  const [touchBursts, setTouchBursts] = useState<TouchBurst[]>([])
   const [pendingMapHeart, setPendingMapHeart] = useState<[number, number] | null>(null)
   const [mapHeartName, setMapHeartName] = useState('')
   const [editingMapHeartId, setEditingMapHeartId] = useState<string | null>(null)
@@ -389,7 +703,7 @@ function App() {
 
   const floatingHearts = useMemo(
     () =>
-      Array.from({ length: 20 }, (_, index) => ({
+      Array.from({ length: 14 }, (_, index) => ({
         left: `${(index * 37) % 94 + 3}%`,
         delay: `${(index % 10) * -1.35}s`,
         duration: `${9 + (index % 6) * 1.25}s`,
@@ -416,13 +730,191 @@ function App() {
   }, [mapHearts])
 
   useEffect(() => {
+    const updateVisibility = () => setPageVisible(document.visibilityState === 'visible')
+    document.addEventListener('visibilitychange', updateVisibility)
+    return () => document.removeEventListener('visibilitychange', updateVisibility)
+  }, [])
+
+  useEffect(() => {
     if (!storyOpened) return
+    const gallerySection = gallerySectionRef.current
+    if (!gallerySection || typeof IntersectionObserver === 'undefined') {
+      setGalleryInView(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setGalleryInView(entry.isIntersecting && entry.intersectionRatio >= 0.12),
+      { threshold: [0, 0.12] },
+    )
+    observer.observe(gallerySection)
+    return () => observer.disconnect()
+  }, [storyOpened])
+
+  useEffect(() => {
+    if (
+      !storyOpened ||
+      !galleryInView ||
+      galleryPaused ||
+      !pageVisible ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) return
+
     const timer = window.setInterval(
       () => setGalleryPage((current) => (current + 1) % Math.ceil(galleryPhotos.length / 3)),
       7_000,
     )
     return () => window.clearInterval(timer)
+  }, [galleryInView, galleryPaused, pageVisible, storyOpened])
+
+  useEffect(() => {
+    if (!storyOpened) return
+    const storyContent = storyContentRef.current
+    if (!storyContent) return
+
+    const revealElements = Array.from(storyContent.querySelectorAll<HTMLElement>('[data-reveal]'))
+    const pendingImageListeners: Array<() => void> = []
+    const revealElement = (element: HTMLElement) => {
+      const image = element.matches('[data-photo-magic]')
+        ? element.matches('img')
+          ? element as HTMLImageElement
+          : element.querySelector('img')
+        : null
+      if (!image || image.complete) {
+        if (element.dataset.revealRequested === 'true') element.dataset.inView = 'true'
+        return
+      }
+
+      if (element.dataset.revealWaiting === 'true') return
+      element.dataset.revealWaiting = 'true'
+      const onReady = () => {
+        delete element.dataset.revealWaiting
+        if (element.dataset.revealRequested === 'true') element.dataset.inView = 'true'
+      }
+      image.addEventListener('load', onReady, { once: true })
+      image.addEventListener('error', onReady, { once: true })
+      pendingImageListeners.push(() => {
+        image.removeEventListener('load', onReady)
+        image.removeEventListener('error', onReady)
+        delete element.dataset.revealWaiting
+      })
+    }
+
+    if (
+      typeof IntersectionObserver === 'undefined' ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      revealElements.forEach((element) => {
+        element.dataset.revealRequested = 'true'
+        revealElement(element)
+      })
+      return () => pendingImageListeners.forEach((removeListener) => removeListener())
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const element = entry.target as HTMLElement
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.18) {
+            element.dataset.revealRequested = 'true'
+            revealElement(element)
+            return
+          }
+
+          if (entry.intersectionRatio <= 0.06) {
+            delete element.dataset.revealRequested
+            delete element.dataset.inView
+          }
+        })
+      },
+      { threshold: [0, 0.06, 0.18], rootMargin: '0px 0px -8% 0px' },
+    )
+
+    revealElements.forEach((element) => observer.observe(element))
+
+    return () => {
+      observer.disconnect()
+      pendingImageListeners.forEach((removeListener) => removeListener())
+    }
+  }, [activeMemory, galleryPage, storyOpened])
+
+  useEffect(() => {
+    if (!storyOpened || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const storyContent = storyContentRef.current
+    if (!storyContent || typeof IntersectionObserver === 'undefined') return
+    const effectElements = Array.from(storyContent.querySelectorAll<HTMLElement>('[data-screen-effect]'))
+    const armedElements = new Set(effectElements)
+    const activeElements = new Set<HTMLElement>()
+    const pendingImageListeners: Array<() => void> = []
+
+    const launchEffect = (element: HTMLElement) => {
+      if (!armedElements.has(element) || !activeElements.has(element)) return
+      const effectType = element.dataset.screenEffect as ScreenEffect['type'] | undefined
+      if (!effectType) return
+
+      armedElements.delete(element)
+      if (screenEffectTimerRef.current !== null) window.clearTimeout(screenEffectTimerRef.current)
+      setScreenEffect({ id: Date.now(), type: effectType })
+      screenEffectTimerRef.current = window.setTimeout(() => setScreenEffect(null), 2_650)
+    }
+
+    const launchWhenReady = (element: HTMLElement) => {
+      const image = element.matches('img') ? element as HTMLImageElement : element.querySelector('img')
+      if (!image || image.complete) {
+        launchEffect(element)
+        return
+      }
+
+      if (element.dataset.screenEffectWaiting === 'true') return
+      element.dataset.screenEffectWaiting = 'true'
+      const onReady = () => {
+        delete element.dataset.screenEffectWaiting
+        launchEffect(element)
+      }
+      image.addEventListener('load', onReady, { once: true })
+      image.addEventListener('error', onReady, { once: true })
+      pendingImageListeners.push(() => {
+        image.removeEventListener('load', onReady)
+        image.removeEventListener('error', onReady)
+        delete element.dataset.screenEffectWaiting
+      })
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const element = entry.target as HTMLElement
+          if (entry.intersectionRatio <= 0.06) {
+            activeElements.delete(element)
+            armedElements.add(element)
+            return
+          }
+
+          if (!entry.isIntersecting || entry.intersectionRatio < 0.3) {
+            activeElements.delete(element)
+            return
+          }
+
+          activeElements.add(element)
+          launchWhenReady(element)
+        })
+      },
+      { threshold: [0, 0.06, 0.3], rootMargin: '0px 0px -8% 0px' },
+    )
+
+    effectElements.forEach((element) => observer.observe(element))
+    return () => {
+      observer.disconnect()
+      pendingImageListeners.forEach((removeListener) => removeListener())
+    }
   }, [storyOpened])
+
+  useEffect(() => () => {
+    if (screenEffectTimerRef.current !== null) window.clearTimeout(screenEffectTimerRef.current)
+    if (firstKissTimerRef.current !== null) window.clearTimeout(firstKissTimerRef.current)
+    if (galleryPauseTimerRef.current !== null) window.clearTimeout(galleryPauseTimerRef.current)
+    touchBurstTimersRef.current.forEach((timer) => window.clearTimeout(timer))
+  }, [])
 
   useEffect(() => {
     if (!storyOpened) return
@@ -439,12 +931,17 @@ function App() {
         if (entry.intersectionRatio >= 0.32 && !firstKissInViewRef.current) {
           firstKissInViewRef.current = true
           setFirstKissRevealed(true)
+          setFirstKissCelebrating(true)
+          if (firstKissTimerRef.current !== null) window.clearTimeout(firstKissTimerRef.current)
+          firstKissTimerRef.current = window.setTimeout(() => setFirstKissCelebrating(false), 2_650)
           return
         }
 
         if (entry.intersectionRatio <= 0.08 && firstKissInViewRef.current) {
           firstKissInViewRef.current = false
           setFirstKissRevealed(false)
+          setFirstKissCelebrating(false)
+          if (firstKissTimerRef.current !== null) window.clearTimeout(firstKissTimerRef.current)
         }
       },
       { threshold: [0.08, 0.32] },
@@ -453,6 +950,7 @@ function App() {
     observer.observe(firstKissPhoto)
     return () => {
       firstKissInViewRef.current = false
+      if (firstKissTimerRef.current !== null) window.clearTimeout(firstKissTimerRef.current)
       observer.disconnect()
     }
   }, [storyOpened])
@@ -486,14 +984,47 @@ function App() {
     if (spinning) return
     const selected = Math.floor(Math.random() * wheelOptions.length)
     const extraRotation = 1_440 + (360 - selected * 60 - 30)
+    const spinDuration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 60 : 3_250
     setSpinning(true)
     setWheelResult('')
+    setWheelRevealOpen(false)
     setRotation((current) => current + extraRotation)
     window.setTimeout(() => {
       setWheelResult(wheelOptions[selected])
       setWheelRevealOpen(true)
       setSpinning(false)
-    }, 3_250)
+    }, spinDuration)
+  }
+
+  const handlePhotoMagic = (event: React.MouseEvent<HTMLElement>) => {
+    const target = (event.target as HTMLElement).closest<HTMLElement>('[data-photo-magic]')
+    if (
+      !target ||
+      screenEffect ||
+      firstKissCelebrating ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) return
+    const effect = target.dataset.photoMagic as TouchEffect | undefined
+    if (!effect) return
+
+    const id = ++touchBurstIdRef.current
+    const burst = { id, x: event.clientX, y: event.clientY, effect }
+    setTouchBursts((current) => [...current.slice(-1), burst])
+
+    const timer = window.setTimeout(() => {
+      setTouchBursts((current) => current.filter((item) => item.id !== id))
+      touchBurstTimersRef.current.delete(timer)
+    }, 950)
+    touchBurstTimersRef.current.add(timer)
+  }
+
+  const pauseGallery = () => {
+    setGalleryPaused(true)
+    if (galleryPauseTimerRef.current !== null) window.clearTimeout(galleryPauseTimerRef.current)
+    galleryPauseTimerRef.current = window.setTimeout(() => {
+      setGalleryPaused(false)
+      galleryPauseTimerRef.current = null
+    }, 12_000)
   }
 
   const moveMapHeart = (id: string, position: [number, number]) => {
@@ -556,8 +1087,8 @@ function App() {
   }
 
   return (
-    <main className="story">
-      <div className="ambient-hearts" aria-hidden="true">
+    <main className="story" onClick={handlePhotoMagic}>
+      <div className={`ambient-hearts ${screenEffect || firstKissCelebrating ? 'is-muted' : ''}`} aria-hidden="true">
         {floatingHearts.map((heart, index) => (
           <span
             key={index}
@@ -576,7 +1107,10 @@ function App() {
         ))}
       </div>
 
-      {firstKissRevealed && (
+      {screenEffect && createPortal(<ScreenRomanceEffect effect={screenEffect} />, document.body)}
+      {touchBursts.length > 0 && createPortal(<TouchBurstLayer bursts={touchBursts} />, document.body)}
+
+      {firstKissCelebrating && createPortal(
         <div className="first-kiss-celebration" aria-hidden="true">
           <span className="celebration-flash" />
           <span className="celebration-main-heart">♥</span>
@@ -612,17 +1146,22 @@ function App() {
               />
             ))}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {!storyOpened && (
         <section className="cover-section section-shell" aria-label="Portada de Algenis y Lisbeth">
           <img
             className="cover-art"
-            src={assetUrl('og.png')}
+            src={assetUrl('cover-mobile.jpg')}
             alt="Algenis y Lisbeth, nuestra historia"
             loading="eager"
             fetchPriority="high"
+            decoding="async"
+            width="1536"
+            height="1024"
+            data-photo-magic="sparkles"
           />
           <button className="cover-button" type="button" onClick={openStory}>
             Abrir nuestra historia <span aria-hidden="true">♥</span>
@@ -630,7 +1169,8 @@ function App() {
         </section>
       )}
         <div
-          className={`story-content ${storyOpened ? 'is-open' : 'is-preloading'}`}
+          ref={storyContentRef}
+          className={`story-content motion-ready ${storyOpened ? 'is-open' : 'is-preloading'}`}
           aria-hidden={!storyOpened}
         >
       <button className="music-control" type="button" onClick={requestVideoPlayback}>
@@ -651,36 +1191,31 @@ function App() {
           alt="Algenis y Lisbeth abrazados"
           rotation={-2.4}
           className="hero-photo"
+          motion="polaroid-left"
+          touchEffect="hearts"
         />
         <div className="scroll-cue" aria-hidden="true">
           <span />
-          Sigue bajando
+          Toca las fotos · sigue bajando
         </div>
       </section>
 
       <section className="section-shell anniversary-section" aria-labelledby="anniversary-title">
-        <div className="glass-card anniversary-card">
-          <p id="anniversary-title" className="script intro-script">Juntos desde hace</p>
-          <p className="anniversary-main" aria-live="polite">
-            {elapsed.years} años, {elapsed.months} meses y<br />
-            {elapsed.days} días
-          </p>
-          <p className="anniversary-clock">
-            <span>{String(elapsed.hours).padStart(2, '0')}h</span>
-            <span>{String(elapsed.minutes).padStart(2, '0')}m</span>
-            <span>{String(elapsed.seconds).padStart(2, '0')}s</span>
-          </p>
-          <p className="anniversary-since">Desde el 29 de noviembre de 2019 · 23:55</p>
-        </div>
+        <AnniversaryCard />
         <figure
           className="crop-photo anniversary-photo--complete"
           style={{ aspectRatio: '3 / 4', '--photo-rotation': '1.8deg' } as CSSProperties}
+          data-reveal="mirror-glide"
+          data-photo-magic="sparkles"
+          data-screen-effect="heart-shower"
+          data-screen-effect-key="anniversary-hearts"
         >
           <div className="crop-photo__viewport">
             <img
-              src={assetUrl('memories/anniversary-mirror.png')}
+              src={assetUrl('memories/anniversary-mirror-mobile.jpg')}
               alt="Algenis y Lisbeth juntos frente al espejo"
-              loading="eager"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </figure>
@@ -688,7 +1223,7 @@ function App() {
 
       <section className="section-shell video-section" aria-labelledby="song-title">
         <SectionHeading eyebrow="Nuestra canción" id="song-title">Un recuerdo que siempre suena</SectionHeading>
-        <div className="video-frame">
+        <div className="video-frame" data-reveal="cinema-open">
           <iframe
             ref={videoRef}
             src={`https://www.youtube-nocookie.com/embed/C3NxyNFT62w?autoplay=0&playsinline=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
@@ -704,7 +1239,7 @@ function App() {
       </section>
 
       <section className="section-shell letter-section" aria-labelledby="letter-title">
-        <div className={`love-letter ${letterOpen ? 'is-open' : ''}`}>
+        <div className={`love-letter ${letterOpen ? 'is-open' : ''}`} data-reveal="letter-rise">
           {!letterOpen ? (
             <>
               <p className="eyebrow" id="letter-title">Mensaje privado</p>
@@ -733,17 +1268,20 @@ function App() {
         <figure
           className="crop-photo collage-photo--complete"
           style={{ aspectRatio: '576 / 1280', '--photo-rotation': '-1.6deg' } as CSSProperties}
+          data-reveal="film-unroll"
+          data-photo-magic="stardust"
         >
           <div className="crop-photo__viewport">
             <img
               src={assetUrl('memories/complete-collage.webp')}
               alt="Collage completo de recuerdos de Algenis y Lisbeth"
               loading="lazy"
+              decoding="async"
             />
           </div>
         </figure>
 
-        <div className="glass-card reasons-card">
+        <div className="glass-card reasons-card" data-reveal="card-bloom">
           <h2 className="script">Lo que más amo de Lisbeth</h2>
           <ul>
             <li>Tu sonrisa boba por la mañana</li>
@@ -761,12 +1299,15 @@ function App() {
           ref={firstKissRef}
           className={`crop-photo young-kiss-photo--complete first-kiss-moment ${firstKissRevealed ? 'is-revealed' : ''}`}
           style={{ aspectRatio: '498 / 1109', '--photo-rotation': '2.1deg' } as CSSProperties}
+          data-reveal="kiss-focus"
+          data-photo-magic="hearts"
         >
           <div className="crop-photo__viewport">
             <img
               src={assetUrl('memories/complete-young-kiss.webp')}
               alt="Algenis y Lisbeth compartiendo su primer beso"
               loading="lazy"
+              decoding="async"
             />
             <div className="first-kiss-reveal" aria-live="polite" aria-hidden={!firstKissRevealed}>
               <p className="first-kiss-message">
@@ -778,14 +1319,20 @@ function App() {
         </figure>
       </section>
 
-      <section className="section-shell gallery-section" aria-labelledby="gallery-title">
+      <section ref={gallerySectionRef} className="section-shell gallery-section" aria-labelledby="gallery-title">
         <SectionHeading eyebrow="Doce pedacitos de nosotros" id="gallery-title">Nuestra historia en fotos</SectionHeading>
         <p className="section-description">Tres recuerdos en cada tarjeta. La galería cambia sola, pero también puedes recorrerla.</p>
-        <div className="glass-card gallery-card">
-          <div className="gallery-grid" key={galleryPage} aria-live="polite">
+        <div className="glass-card gallery-card" data-reveal="album-rise" onPointerDown={pauseGallery}>
+          <div className="gallery-grid" key={galleryPage} aria-live="off">
             {visibleGalleryPhotos.map((photo, index) => (
-              <figure className={`gallery-memory gallery-memory--${index + 1}`} key={photo.file}>
-                <img src={assetUrl(`memories/${photo.file}`)} alt={photo.alt} loading="lazy" />
+              <figure
+                className={`gallery-memory gallery-memory--${index + 1}`}
+                key={photo.file}
+                data-reveal={photo.motion}
+                data-photo-magic={photo.touchEffect}
+                style={{ '--reveal-delay': `${index * 85}ms` } as CSSProperties}
+              >
+                <img src={assetUrl(`memories/${photo.file}`)} alt={photo.alt} loading="lazy" decoding="async" />
                 <figcaption>
                   <span>{String(galleryPage * 3 + index + 1).padStart(2, '0')}</span>
                   {photo.title}
@@ -816,7 +1363,7 @@ function App() {
       </section>
 
       <section className="section-shell places-section" aria-labelledby="places-title">
-        <div className="glass-card map-card">
+        <div className="glass-card map-card" data-reveal="map-fade">
           <SectionHeading eyebrow="San Juan · República Dominicana" id="places-title">El mapa de nuestro amor</SectionHeading>
           <p className="map-description">
             Recorre la provincia de San Juan, amplía o pellizca el mapa. Toca cualquier lugar vacío para agregar un corazón rojo y ponerle un nombre.
@@ -915,9 +1462,11 @@ function App() {
           height={330}
           alt="Un recuerdo de juventud de Algenis y Lisbeth"
           rotation={-1.9}
+          motion="postcard-toss"
+          touchEffect="stardust"
         />
 
-        <div className="glass-card bucket-card">
+        <div className="glass-card bucket-card" data-reveal="list-rise">
           <SectionHeading eyebrow="Cosas que quiero hacer contigo">Nuestra lista</SectionHeading>
           <ul>
             {plans.map((plan) => (
@@ -930,7 +1479,13 @@ function App() {
       <section className="section-shell sky-section" aria-labelledby="sky-title">
         <SectionHeading eyebrow="Secretos entre estrellas" id="sky-title">Cielo de recuerdos</SectionHeading>
         <p className="section-description">Toca las seis estrellas doradas y descubre los momentos que guardé para ti.</p>
-        <div className="memory-sky" aria-label="Seis recuerdos escondidos en las estrellas">
+        <div
+          className="memory-sky"
+          aria-label="Seis recuerdos escondidos en las estrellas"
+          data-reveal="sky-bloom"
+          data-screen-effect="shooting-star"
+          data-screen-effect-key="memory-sky-star"
+        >
           <span className="shooting-star" aria-hidden="true" />
           {skyMemories.map((memory, index) => {
             const position = starPositions[index]
@@ -989,7 +1544,12 @@ function App() {
           {vouchers.map((voucher, index) => {
             const isRedeemed = redeemed.includes(index)
             return (
-              <article className={`voucher ${isRedeemed ? 'is-redeemed' : ''}`} key={voucher}>
+              <article
+                className={`voucher ${isRedeemed ? 'is-redeemed' : ''}`}
+                key={voucher}
+                data-reveal={index % 2 === 0 ? 'ticket-left' : 'ticket-right'}
+                style={{ '--reveal-delay': `${index * 55}ms` } as CSSProperties}
+              >
                 <span className="voucher-heart" aria-hidden="true">♥</span>
                 <div className="voucher-copy">
                   <span>Vale</span>
@@ -1007,7 +1567,7 @@ function App() {
       <section className="section-shell wheel-section" aria-labelledby="wheel-title">
         <SectionHeading eyebrow="Para ti" id="wheel-title">La ruleta tiene una pregunta</SectionHeading>
         <p className="section-description">Gira... y responde con el corazón</p>
-        <div className="wheel-stage">
+        <div className="wheel-stage" data-reveal="wheel-enter">
           <span className="wheel-pointer" aria-hidden="true" />
           <div className="wheel" style={{ transform: `rotate(${rotation}deg)` }}>
             {wheelOptions.map((option, index) => (
@@ -1030,57 +1590,27 @@ function App() {
         </p>
       </section>
 
-      <section className="section-shell capsule-section" aria-labelledby="capsule-title">
-        <div className={`glass-card time-capsule ${capsuleCountdown.unlocked ? 'is-unlocked' : ''}`}>
-          <SectionHeading eyebrow="Para nuestro futuro" id="capsule-title">Cápsula del tiempo</SectionHeading>
-          <div className="capsule-lock" aria-hidden="true"><span>♥</span></div>
-
-          {!capsuleCountdown.unlocked ? (
-            <>
-              <p className="capsule-intro">Hay palabras que merecen esperar el momento perfecto.</p>
-              <time dateTime="2026-11-29T00:00:00-04:00">Se abrirá el 29 de noviembre de 2026</time>
-              <div className="capsule-countdown" aria-label="Tiempo restante para abrir la cápsula" aria-live="polite">
-                <div><strong>{capsuleCountdown.days}</strong><span>Días</span></div>
-                <div><strong>{String(capsuleCountdown.hours).padStart(2, '0')}</strong><span>Horas</span></div>
-                <div><strong>{String(capsuleCountdown.minutes).padStart(2, '0')}</strong><span>Min</span></div>
-                <div><strong>{String(capsuleCountdown.seconds).padStart(2, '0')}</strong><span>Seg</span></div>
-              </div>
-              <p className="capsule-status"><span aria-hidden="true">✦</span> El tiempo está guardando este mensaje para nosotros</p>
-            </>
-          ) : !capsuleOpen ? (
-            <div className="capsule-ready">
-              <p className="script">La espera terminó. Este mensaje ya es nuestro.</p>
-              <button type="button" onClick={() => setCapsuleOpen(true)}>Abrir cápsula</button>
-            </div>
-          ) : (
-            <article className="capsule-message">
-              <p className="eyebrow">Un mensaje desde nuestro pasado</p>
-              <p className="script">
-                Si estás leyendo esto, llegamos juntos a otro aniversario. Gracias por seguir siendo
-                mi lugar favorito, mi calma y mi aventura. Quiero seguir eligiéndote en cada versión
-                de nosotros. Te amo, Lisbeth.
-              </p>
-              <p className="script capsule-signature">Algenis</p>
-              <button type="button" onClick={() => setCapsuleOpen(false)}>Cerrar con amor</button>
-            </article>
-          )}
-        </div>
-      </section>
+      <TimeCapsuleSection />
 
       <section className="section-shell final-section" aria-labelledby="final-title">
         <figure
           className="crop-photo final-photo final-photo--uploaded"
           style={{ aspectRatio: '3 / 4', '--photo-rotation': '1.5deg' } as CSSProperties}
+          data-reveal="final-focus"
+          data-photo-magic="hearts"
+          data-screen-effect="golden-flare"
+          data-screen-effect-key="final-golden-flare"
         >
           <div className="crop-photo__viewport">
             <img
-              src={assetUrl('memories/final-kiss.png')}
+              src={assetUrl('memories/final-kiss-mobile.jpg')}
               alt="Algenis y Lisbeth besándose bajo las luces"
               loading="lazy"
+              decoding="async"
             />
           </div>
         </figure>
-        <div className="final-copy" id="final-title">
+        <div className="final-copy" id="final-title" data-reveal="final-copy">
           <p className="script">Lisbeth,</p>
           <p className="script">por todo lo que somos.</p>
           <p className="script soft">Te amo.</p>

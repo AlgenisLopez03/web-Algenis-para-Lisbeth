@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import './App.css'
 
 const START_DATE = new Date(2019, 10, 29, 23, 55, 0)
+const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
 const CAPSULE_UNLOCK_DATE = new Date(2026, 10, 29, 0, 0, 0)
 
 type ElapsedTime = {
@@ -273,7 +274,7 @@ function CropPhoto({
     <figure className={`crop-photo ${className}`} style={frameStyle}>
       <div className="crop-photo__viewport">
         <img
-          src={`/memories/${file}`}
+          src={assetUrl(`memories/${file}`)}
           alt={alt}
           draggable="false"
           loading="lazy"
@@ -509,7 +510,7 @@ function App() {
         <section className="cover-section section-shell" aria-label="Portada de Algenis y Lisbeth">
           <img
             className="cover-art"
-            src="/og.png"
+            src={assetUrl('og.png')}
             alt="Algenis y Lisbeth, nuestra historia"
             loading="eager"
             fetchPriority="high"
@@ -613,7 +614,7 @@ function App() {
         >
           <div className="crop-photo__viewport">
             <img
-              src="/memories/complete-collage.webp"
+              src={assetUrl('memories/complete-collage.webp')}
               alt="Collage completo de recuerdos de Algenis y Lisbeth"
               loading="lazy"
             />
@@ -640,7 +641,7 @@ function App() {
         >
           <div className="crop-photo__viewport">
             <img
-              src="/memories/complete-young-kiss.webp"
+              src={assetUrl('memories/complete-young-kiss.webp')}
               alt="Algenis y Lisbeth compartiendo un beso"
               loading="lazy"
             />
@@ -655,7 +656,7 @@ function App() {
           <div className="gallery-grid" key={galleryPage} aria-live="polite">
             {visibleGalleryPhotos.map((photo, index) => (
               <figure className={`gallery-memory gallery-memory--${index + 1}`} key={photo.file}>
-                <img src={`/memories/${photo.file}`} alt={photo.alt} loading="lazy" />
+                <img src={assetUrl(`memories/${photo.file}`)} alt={photo.alt} loading="lazy" />
                 <figcaption>
                   <span>{String(galleryPage * 3 + index + 1).padStart(2, '0')}</span>
                   {photo.title}
@@ -943,7 +944,11 @@ function App() {
           style={{ aspectRatio: '3 / 4', '--photo-rotation': '1.5deg' } as CSSProperties}
         >
           <div className="crop-photo__viewport">
-            <img src="/memories/final-kiss.png" alt="Algenis y Lisbeth besándose bajo las luces" loading="lazy" />
+            <img
+              src={assetUrl('memories/final-kiss.png')}
+              alt="Algenis y Lisbeth besándose bajo las luces"
+              loading="lazy"
+            />
           </div>
         </figure>
         <div className="final-copy" id="final-title">

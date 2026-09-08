@@ -13,13 +13,18 @@ const hostingWorker = () => ({
 })
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    babel({ presets: [reactCompilerPreset()] }),
-    hostingWorker(),
-  ],
-  build: {
-    outDir: 'dist/client',
-  },
+export default defineConfig(({ mode }) => {
+  const isGitHubPages = mode === 'github-pages'
+
+  return {
+    base: isGitHubPages ? '/web-Algenis-para-Lisbeth/' : '/',
+    plugins: [
+      react(),
+      babel({ presets: [reactCompilerPreset()] }),
+      ...(!isGitHubPages ? [hostingWorker()] : []),
+    ],
+    build: {
+      outDir: isGitHubPages ? 'dist-pages' : 'dist/client',
+    },
+  }
 })

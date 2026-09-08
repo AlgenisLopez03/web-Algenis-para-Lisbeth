@@ -4,7 +4,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from 'react-leaf
 import 'leaflet/dist/leaflet.css'
 import './App.css'
 
-const START_DATE = new Date(2019, 10, 29, 0, 0, 0)
+const START_DATE = new Date(2019, 10, 29, 23, 55, 0)
 const CAPSULE_UNLOCK_DATE = new Date(2026, 10, 29, 0, 0, 0)
 
 type ElapsedTime = {
@@ -554,6 +554,7 @@ function App() {
             <span>{String(elapsed.minutes).padStart(2, '0')}m</span>
             <span>{String(elapsed.seconds).padStart(2, '0')}s</span>
           </p>
+          <p className="anniversary-since">Desde el 29 de noviembre de 2019 · 23:55</p>
         </div>
         <CropPhoto
           file="screen-02.png"
@@ -570,9 +571,9 @@ function App() {
         <SectionHeading eyebrow="Nuestra canción" id="song-title">Un recuerdo que siempre suena</SectionHeading>
         <div className="video-frame">
           <iframe
-            src="https://www.youtube-nocookie.com/embed/C3NxyNFT62w?rel=0"
+            src="https://www.youtube-nocookie.com/embed/C3NxyNFT62w?autoplay=1&playsinline=1&rel=0"
             title="Nuestro video especial"
-            loading="lazy"
+            loading="eager"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           />
@@ -633,15 +634,18 @@ function App() {
           </ul>
         </div>
 
-        <CropPhoto
-          file="screen-06.png"
-          x={61}
-          y={321}
-          width={263}
-          height={333}
-          alt="Algenis y Lisbeth compartiendo un beso"
-          rotation={2.1}
-        />
+        <figure
+          className="crop-photo young-kiss-photo--complete"
+          style={{ aspectRatio: '498 / 1109', '--photo-rotation': '2.1deg' } as CSSProperties}
+        >
+          <div className="crop-photo__viewport">
+            <img
+              src="/memories/complete-young-kiss.webp"
+              alt="Algenis y Lisbeth compartiendo un beso"
+              loading="lazy"
+            />
+          </div>
+        </figure>
       </section>
 
       <section className="section-shell gallery-section" aria-labelledby="gallery-title">

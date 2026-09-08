@@ -313,6 +313,14 @@ h2,
   letter-spacing: 0.04em;
 }
 
+.anniversary-since {
+  margin: 15px 0 0;
+  color: rgba(255, 249, 233, 0.58);
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
 .video-section {
   padding-top: 70px;
 }
@@ -444,7 +452,8 @@ h2,
   padding-top: 30px;
 }
 
-.collage-photo--complete img {
+.collage-photo--complete img,
+.young-kiss-photo--complete img {
   top: 0;
   left: 0;
   width: 100%;
